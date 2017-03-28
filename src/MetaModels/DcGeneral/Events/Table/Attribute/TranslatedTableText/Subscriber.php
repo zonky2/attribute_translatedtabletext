@@ -12,7 +12,8 @@
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Andreas Nölke <zero@brothers-project.de>
  * @author     David Greminger <david.greminger@1up.io>
- * @copyright  2012-2016 The MetaModels team.
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2017 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
@@ -163,7 +164,10 @@ class Subscriber extends BaseSubscriber
     public function loadValues(DecodePropertyValueForWidgetEvent $event)
     {
         if (($event->getEnvironment()->getDataDefinition()->getName() !== 'tl_metamodel_attribute')
-            || ($event->getProperty() !== 'translatedtabletext_cols')) {
+            || ($event->getProperty() !== 'translatedtabletext_cols')
+            || ($event->getEnvironment()->getInputProvider()->getParameter('act') === 'select'
+                && !$event->getModel()->getId())
+        ) {
             return;
         }
 
