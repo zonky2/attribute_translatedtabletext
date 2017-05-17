@@ -33,3 +33,11 @@ CREATE TABLE `tl_metamodel_attribute` (
   `translatedtabletext_cols` blob NULL,
   `tabletext_quantity_cols` varchar(2) NOT NULL default ''
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- 
+-- Table `tl_metamodel_rendersetting`
+-- 
+
+CREATE TABLE `tl_metamodel_rendersetting` (
+  `translatedtabletext_hide_tablehead` varchar(1) NOT NULL default '0'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
