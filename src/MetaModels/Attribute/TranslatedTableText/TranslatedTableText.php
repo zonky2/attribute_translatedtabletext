@@ -1,10 +1,14 @@
 <?php
 
 /**
- * The MetaModels extension allows the creation of multiple collections of custom items,
- * each with its own unique set of selectable attributes, with attribute extendability.
- * The Front-End modules allow you to build powerful listing and filtering of the
- * data in each collection.
+ * This file is part of MetaModels/attribute_translatedtabletext.
+ *
+ * (c) 2012-2017 The MetaModels team.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
  *
  * @package    MetaModels
  * @subpackage AttributeTranslatedTableText
@@ -13,7 +17,8 @@
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Andreas Isaak <andy.jared@googlemail.com>
  * @author     David Greminger <david.greminger@1up.io>
- * @copyright  2012-2016 The MetaModels team.
+ * @author     Ingolf Steinhardt <info@e-spin.de>
+ * @copyright  2012-2017 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
@@ -26,11 +31,6 @@ use MetaModels\Attribute\IComplex;
 
 /**
  * This is the MetaModelAttribute class for handling translated table text fields.
- *
- * @package    MetaModels
- * @subpackage AttributeTranslatedTableText
- * @author     David Maack <david.maack@arcor.de>
- * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  */
 class TranslatedTableText extends Base implements ITranslated, IComplex
 {
@@ -66,10 +66,10 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
 
         if (array_key_exists($strActiveLanguage, $arrAllColLabels)) {
             $arrColLabels = $arrAllColLabels[$strActiveLanguage];
-        } elseif (array_key_exists($strActiveLanguage, $strFallbackLanguage)) {
+        } elseif (array_key_exists($strFallbackLanguage, $arrAllColLabels)) {
             $arrColLabels = $arrAllColLabels[$strFallbackLanguage];
         } else {
-            $arrColLabels = array_pop(array_reverse($arrAllColLabels));
+            $arrColLabels = array_shift($arrAllColLabels);
         }
 
         // Build DCA.
@@ -77,8 +77,8 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
         $arrFieldDef['inputType']            = 'multiColumnWizard';
         $arrFieldDef['eval']['columnFields'] = array();
 
-        $count = count($arrColLabels);
-        for ($i = 0; $i < $count; $i++) {
+        $countCol = count($arrColLabels);
+        for ($i = 0; $i < $countCol; $i++) {
             $arrFieldDef['eval']['columnFields']['col_' . $i] = array(
                 'label' => $arrColLabels[$i]['rowLabel'],
                 'inputType' => 'text',
@@ -147,10 +147,15 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
             return array();
         }
 
-        $widgetValue = array();
-        foreach ($varValue as $row) {
-            foreach ($row as $key => $col) {
-                $widgetValue[$col['row']]['col_' . $key] = $col['value'];
+        $arrColLabels = deserialize($this->get('translatedtabletext_cols'), true);
+        $countCol     = count($arrColLabels);
+        $widgetValue  = array();
+
+        foreach ($varValue as $k => $row) {
+            for ($kk = 0; $kk < $countCol; $kk++) {
+                $i = array_search($kk, array_column($row, 'col'));
+
+                $widgetValue[$k]['col_' . $kk] = ($i !== false) ? $row[$i]['value'] : '';
             }
         }
 
@@ -167,14 +172,17 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
         }
 
         $newValue = array();
+        // Start row numerator at 0.
+        $intRow = 0;
         foreach ($varValue as $k => $row) {
             foreach ($row as $kk => $col) {
                 $kk = str_replace('col_', '', $kk);
 
                 $newValue[$k][$kk]['value'] = $col;
                 $newValue[$k][$kk]['col']   = $kk;
-                $newValue[$k][$kk]['row']   = $k;
+                $newValue[$k][$kk]['row']   = $intRow;
             }
+            $intRow++;
         }
 
         return $newValue;
@@ -248,47 +256,37 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
         $objDB = $this->getMetaModel()->getServiceContainer()->getDatabase();
 
         // Get the ids.
-        $arrIds         = array_keys($arrValues);
+        $arrIds = array_keys($arrValues);
+        
+        // Reset all data for the ids in language.
+        $this->unsetValueFor($arrIds, $strLangCode);
+
+        // Insert or update the cells.
         $strQueryUpdate = 'UPDATE %s';
+        $strQueryInsert = 'INSERT INTO ' . $this->getValueTable() . ' %s';
 
-        // Insert or Update the cells.
-        $strQuery = 'INSERT INTO ' . $this->getValueTable() . ' %s';
         foreach ($arrIds as $intId) {
-            // No values give, delete all values.
-            if (empty($arrValues[$intId])) {
-                $strDelQuery = 'DELETE FROM ' . $this->getValueTable() . ' WHERE att_id=? AND item_id=? AND langcode=?';
-
-                $objDB
-                    ->prepare($strDelQuery)
-                    ->execute(intval($this->get('id')), $intId, $strLangCode);
-
-                continue;
-            }
-
-            // Delete missing rows.
-            $rowIds      = array_keys($arrValues[$intId]);
-            $strDelQuery = sprintf(
-                'DELETE FROM %s WHERE att_id=? AND item_id=? AND langcode=? AND row NOT IN (%s)',
-                $this->getValueTable(),
-                implode(',', $rowIds)
-            );
-
-            $objDB
-                ->prepare($strDelQuery)
-                ->execute(intval($this->get('id')), $intId, $strLangCode);
-
             // Walk every row.
             foreach ($arrValues[$intId] as $row) {
-                // Walk every column and update/insert the value.
+                // Walk every column and update / insert the value.
                 foreach ($row as $col) {
-                    $values   = $this->getSetValues($col, $intId, $strLangCode);
-                    $subQuery = $objDB
-                        ->prepare($strQueryUpdate)
-                        ->set($values)
-                        ->query;
-
+                    $values = $this->getSetValues($col, $intId, $strLangCode);
+                    if (empty($values['value'])) {
+                        continue;
+                    }
                     $objDB
-                        ->prepare($strQuery . ' ON DUPLICATE KEY ' . str_replace('SET ', '', $subQuery))
+                        ->prepare(
+                            $strQueryInsert .
+                            ' ON DUPLICATE KEY ' .
+                            str_replace(
+                                'SET ',
+                                '',
+                                $objDB
+                                    ->prepare($strQueryUpdate)
+                                    ->set($values)
+                                    ->query
+                            )
+                        )
                         ->set($values)
                         ->execute();
                 }
