@@ -66,10 +66,10 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
 
         if (array_key_exists($strActiveLanguage, $arrAllColLabels)) {
             $arrColLabels = $arrAllColLabels[$strActiveLanguage];
-        } elseif (array_key_exists($strActiveLanguage, $strFallbackLanguage)) {
+        } elseif (array_key_exists($strFallbackLanguage, $arrAllColLabels)) {
             $arrColLabels = $arrAllColLabels[$strFallbackLanguage];
         } else {
-            $arrColLabels = array_pop(array_reverse($arrAllColLabels));
+            $arrColLabels = array_shift($arrAllColLabels);
         }
 
         // Build DCA.
