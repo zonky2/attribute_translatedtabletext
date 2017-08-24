@@ -271,7 +271,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
                 // Walk every column and update / insert the value.
                 foreach ($row as $col) {
                     $values = $this->getSetValues($col, $intId, $strLangCode);
-                    if (empty($values['value'])) {
+                    if ($values['value'] === '') {
                         continue;
                     }
                     $objDB
