@@ -41,6 +41,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
     {
         return array_merge(parent::getAttributeSettingNames(), array(
             'translatedtabletext_cols',
+            'tabletext_quantity_cols',
         ));
     }
 
@@ -147,9 +148,8 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
             return array();
         }
 
-        $arrColLabels = deserialize($this->get('translatedtabletext_cols'), true);
-        $countCol     = count($arrColLabels);
-        $widgetValue  = array();
+        $countCol    = $this->get('tabletext_quantity_cols');
+        $widgetValue = array();
 
         foreach ($varValue as $k => $row) {
             for ($kk = 0; $kk < $countCol; $kk++) {
@@ -271,7 +271,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
                 // Walk every column and update / insert the value.
                 foreach ($row as $col) {
                     $values = $this->getSetValues($col, $intId, $strLangCode);
-                    if (empty($values['value'])) {
+                    if ($values['value'] === '') {
                         continue;
                     }
                     $objDB
