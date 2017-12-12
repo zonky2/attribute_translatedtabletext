@@ -18,22 +18,62 @@
  * @author     Andreas Isaak <andy.jared@googlemail.com>
  * @author     David Greminger <david.greminger@1up.io>
  * @author     Ingolf Steinhardt <info@e-spin.de>
+ * @author     David Molineus <david.molineus@netzmacht.de>
  * @copyright  2012-2017 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
 
-namespace MetaModels\Attribute\TranslatedTableText;
+namespace MetaModels\AttributeTranslatedTableTextBundle\Attribute;
 
+use Contao\System;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Query\QueryBuilder;
 use MetaModels\Attribute\Base;
 use MetaModels\Attribute\ITranslated;
 use MetaModels\Attribute\IComplex;
+use MetaModels\IMetaModel;
 
 /**
  * This is the MetaModelAttribute class for handling translated table text fields.
  */
 class TranslatedTableText extends Base implements ITranslated, IComplex
 {
+    /**
+     * Database connection.
+     *
+     * @var Connection
+     */
+    private $connection;
+
+    /**
+     * Instantiate an MetaModel attribute.
+     *
+     * Note that you should not use this directly but use the factory classes to instantiate attributes.
+     *
+     * @param IMetaModel $objMetaModel The MetaModel instance this attribute belongs to.
+     *
+     * @param array      $arrData      The information array, for attribute information, refer to documentation of
+     *                                 table tl_metamodel_attribute and documentation of the certain attribute classes
+     *                                 for information what values are understood.
+     *
+     * @param Connection $connection   Database connection.
+     */
+    public function __construct(IMetaModel $objMetaModel, array $arrData = [], Connection $connection = null)
+    {
+        parent::__construct($objMetaModel, $arrData);
+
+        if (null === $connection) {
+            @trigger_error(
+                'Connection is missing. It has to be passed in the constructor. Fallback will be dropped.',
+                E_USER_DEPRECATED
+            );
+            $connection = System::getContainer()->get('database_connection');
+        }
+
+        $this->connection = $connection;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -106,7 +146,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      *
      * @param int    $intCol      The col number, optional.
      *
-     * @return string
+     * @return array
      */
     protected function getWhere($mixIds, $strLangCode = null, $intRow = null, $intCol = null)
     {
@@ -137,6 +177,58 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
         }
 
         return $arrReturn;
+    }
+
+    /**
+     * Build a where clause for the given id(s) and language code.
+     *
+     * @param QueryBuilder $queryBuilder The query builder for the query  being build.
+     *
+     * @param mixed        $mixIds       One, none or many ids to use.
+     *
+     * @param string       $strLangCode  The language code, optional.
+     *
+     * @param int          $intRow       The row number, optional.
+     *
+     * @param int          $intCol       The col number, optional.
+     *
+     * @return void
+     */
+    protected function buildWhere(
+        QueryBuilder $queryBuilder,
+        $mixIds,
+        $strLangCode = null,
+        $intRow = null,
+        $intCol = null
+    ) {
+        $queryBuilder
+            ->andWhere('att_id = :att_id')
+            ->setParameter('att_id', (int) $this->get('id'));
+
+        if (!empty($mixIds)) {
+            if (is_array($mixIds)) {
+                $queryBuilder
+                    ->andWhere('item_id IN (:item_ids)')
+                    ->setParameter('item_ids', $mixIds, Connection::PARAM_STR_ARRAY);
+            } else {
+                $queryBuilder
+                    ->andWhere('item_id = :item_id')
+                    ->setParameter('item_id', $mixIds);
+            }
+        }
+
+        if (is_int($intRow) && is_int($intCol)) {
+            $queryBuilder
+                ->andWhere('row = :row AND col = :col')
+                ->setParameter('row', $intRow)
+                ->setParameter('col', $intCol);
+        }
+
+        if ($strLangCode) {
+            $queryBuilder
+                ->andWhere('langcode = :langcode')
+                ->setParameter('langcode', $strLangCode);
+        }
     }
 
     /**
@@ -217,22 +309,19 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     public function getTranslatedDataFor($arrIds, $strLangCode)
     {
-        $arrWhere = $this->getWhere($arrIds, $strLangCode);
-        $strQuery = sprintf(
-            'SELECT * FROM %s %s ORDER BY row ASC, col ASC',
-            $this->getValueTable(),
-            ($arrWhere ? ' WHERE ' . $arrWhere['procedure'] : '')
-        );
-        $objValue = $this
-            ->getMetaModel()
-            ->getServiceContainer()
-            ->getDatabase()
-            ->prepare($strQuery)
-            ->execute(($arrWhere ? $arrWhere['params'] : null));
+        $queryBuilder = $this->connection->createQueryBuilder()
+            ->select('*')
+            ->from($this->getValueTable())
+            ->orderBy('row', 'ASC')
+            ->addOrderBy('col', 'ASC');
 
+        $this->buildWhere($queryBuilder, $arrIds, $strLangCode);
+
+        $statement = $queryBuilder->execute();
         $arrReturn = array();
-        while ($objValue->next()) {
-            $arrReturn[$objValue->item_id][$objValue->row][] = $objValue->row();
+
+        while ($value = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $arrReturn[$value['item_id']][$value['row']][] = $value;
         }
 
         return $arrReturn;
@@ -253,17 +342,11 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     public function setTranslatedDataFor($arrValues, $strLangCode)
     {
-        $objDB = $this->getMetaModel()->getServiceContainer()->getDatabase();
-
         // Get the ids.
         $arrIds = array_keys($arrValues);
         
         // Reset all data for the ids in language.
         $this->unsetValueFor($arrIds, $strLangCode);
-
-        // Insert or update the cells.
-        $strQueryUpdate = 'UPDATE %s';
-        $strQueryInsert = 'INSERT INTO ' . $this->getValueTable() . ' %s';
 
         foreach ($arrIds as $intId) {
             // Walk every row.
@@ -274,21 +357,28 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
                     if ($values['value'] === '') {
                         continue;
                     }
-                    $objDB
-                        ->prepare(
-                            $strQueryInsert .
-                            ' ON DUPLICATE KEY ' .
-                            str_replace(
-                                'SET ',
-                                '',
-                                $objDB
-                                    ->prepare($strQueryUpdate)
-                                    ->set($values)
-                                    ->query
-                            )
-                        )
-                        ->set($values)
-                        ->execute();
+
+                    $queryBuilder = $this->connection->createQueryBuilder()->insert($this->getValueTable());
+                    foreach ($values as $name => $value) {
+                        $queryBuilder
+                            ->setValue($name, ':' . $name)
+                            ->setParameter($name, $value);
+                    }
+
+                    $sql        = $queryBuilder->getSQL();
+                    $parameters = $queryBuilder->getParameters();
+
+                    $queryBuilder = $this->connection->createQueryBuilder()->update($this->getValueTable());
+                    foreach ($values as $name => $value) {
+                        $queryBuilder
+                            ->set($name, ':' . $name)
+                            ->setParameter($name, $value);
+                    }
+
+                    $updateSql  = $queryBuilder->getSQL();
+                    $sql       .= ' ON DUPLICATE KEY ' . str_replace($this->getValueTable() . ' SET ', '', $updateSql);
+
+                    $this->connection->executeQuery($sql, $parameters);
                 }
             }
         }
@@ -299,13 +389,9 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     public function unsetValueFor($arrIds, $strLangCode)
     {
-        $objDB    = $this->getMetaModel()->getServiceContainer()->getDatabase();
-        $arrWhere = $this->getWhere($arrIds, $strLangCode);
-        $strQuery = 'DELETE FROM ' . $this->getValueTable() . ($arrWhere ? ' WHERE ' . $arrWhere['procedure'] : '');
-
-        $objDB
-            ->prepare($strQuery)
-            ->execute(($arrWhere ? $arrWhere['params'] : null));
+        $queryBuilder = $this->connection->createQueryBuilder()->delete($this->getValueTable());
+        $this->buildWhere($queryBuilder, $arrIds, $strLangCode);
+        $queryBuilder->execute();
     }
 
     /**
@@ -380,12 +466,8 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
             return;
         }
 
-        $objDB    = $this->getMetaModel()->getServiceContainer()->getDatabase();
-        $arrWhere = $this->getWhere($arrIds);
-        $strQuery = 'DELETE FROM ' . $this->getValueTable() . ($arrWhere ? ' WHERE ' . $arrWhere['procedure'] : '');
-
-        $objDB
-            ->prepare($strQuery)
-            ->execute(($arrWhere ? $arrWhere['params'] : null));
+        $queryBuilder = $this->connection->createQueryBuilder()->delete($this->getValueTable());
+        $this->buildWhere($queryBuilder, $arrIds);
+        $queryBuilder->execute();
     }
 }

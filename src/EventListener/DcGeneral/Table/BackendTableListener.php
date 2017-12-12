@@ -1,10 +1,14 @@
 <?php
 
 /**
- * The MetaModels extension allows the creation of multiple collections of custom items,
- * each with its own unique set of selectable attributes, with attribute extendability.
- * The Front-End modules allow you to build powerful listing and filtering of the
- * data in each collection.
+ * This file is part of MetaModels/attribute_translatedtabletext.
+ *
+ * (c) 2012-2017 The MetaModels team.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
  *
  * @package    MetaModels
  * @subpackage AttributeTranslatedTableText
@@ -13,19 +17,21 @@
  * @author     Andreas Nölke <zero@brothers-project.de>
  * @author     David Greminger <david.greminger@1up.io>
  * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @author     David Molineus <david.molineus@netzmacht.de>
  * @copyright  2012-2017 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
 
-namespace MetaModels\DcGeneral\Events\Table\Attribute\TranslatedTableText;
+namespace MetaModels\AttributeTranslatedTableTextBundle\EventListener\DcGeneral\Table;
 
 use ContaoCommunityAlliance\Contao\Bindings\ContaoEvents;
 use ContaoCommunityAlliance\Contao\Bindings\Events\System\LoadLanguageFileEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\BuildWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\DecodePropertyValueForWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\EncodePropertyValueFromWidgetEvent;
-use MetaModels\DcGeneral\Events\BaseSubscriber;
+use MetaModels\IFactory;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * This is the helper class for handling translated table text fields.
@@ -34,26 +40,32 @@ use MetaModels\DcGeneral\Events\BaseSubscriber;
  * @subpackage AttributeTranslatedTableText
  * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  */
-class Subscriber extends BaseSubscriber
+class BackendTableListener
 {
     /**
-     * {@inheritdoc}
+     * Metamodel factory.
+     *
+     * @var IFactory
      */
-    protected function registerEventsInDispatcher()
+    private $factory;
+
+    /**
+     * Event dispatcher.
+     *
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
+     * BackendTableListener constructor.
+     *
+     * @param IFactory                 $factory         Metamodel factory.
+     * @param EventDispatcherInterface $eventDispatcher Event dispatcher.
+     */
+    public function __construct(IFactory $factory, EventDispatcherInterface $eventDispatcher)
     {
-        $this
-            ->addListener(
-                BuildWidgetEvent::NAME,
-                array($this, 'fillExtraData')
-            )
-            ->addListener(
-                DecodePropertyValueForWidgetEvent::NAME,
-                array($this, 'loadValues')
-            )
-            ->addListener(
-                EncodePropertyValueFromWidgetEvent::NAME,
-                array($this, 'saveValues')
-            );
+        $this->factory         = $factory;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -73,9 +85,10 @@ class Subscriber extends BaseSubscriber
             return;
         }
 
-        $model        = $event->getModel();
-        $objMetaModel = $this->getMetaModelById($event->getModel()->getProperty('pid'));
-        $translator   = $event->getEnvironment()->getTranslator();
+        $model         = $event->getModel();
+        $metaModelName = $this->factory->translateIdToMetaModelName($event->getModel()->getProperty('pid'));
+        $objMetaModel  = $this->factory->getMetaModel($metaModelName);
+        $translator    = $event->getEnvironment()->getTranslator();
 
         // Check model and input for the cols and get the max value.
         $intModelCols = $model->getProperty('tabletext_quantity_cols');
@@ -95,10 +108,7 @@ class Subscriber extends BaseSubscriber
         $arrValues = $attribute ? $attribute->get('name') : array();
 
         $languageEvent = new LoadLanguageFileEvent('languages');
-        $this
-            ->getServiceContainer()
-            ->getEventDispatcher()
-            ->dispatch(ContaoEvents::SYSTEM_LOAD_LANGUAGE_FILE, $languageEvent);
+        $this->eventDispatcher->dispatch(ContaoEvents::SYSTEM_LOAD_LANGUAGE_FILE, $languageEvent);
 
         $arrLanguages = array();
         foreach ((array) $objMetaModel->getAvailableLanguages() as $strLangCode) {
@@ -171,8 +181,9 @@ class Subscriber extends BaseSubscriber
             return;
         }
 
-        $objMetaModel = $this->getMetaModelById($event->getModel()->getProperty('pid'));
-        $arrLanguages = $objMetaModel->getAvailableLanguages();
+        $metaModelName = $this->factory->translateIdToMetaModelName($event->getModel()->getProperty('pid'));
+        $objMetaModel  = $this->factory->getMetaModel($metaModelName);
+        $arrLanguages  = $objMetaModel->getAvailableLanguages();
 
         // Check model and input for the cols and get the max value.
         $intModelCols = $event->getModel()->getProperty('tabletext_quantity_cols');
@@ -235,8 +246,9 @@ class Subscriber extends BaseSubscriber
             return;
         }
 
-        $objMetaModel = $this->getMetaModelById($event->getModel()->getProperty('pid'));
-        $varValue     = $event->getValue();
+        $metaModelName = $this->factory->translateIdToMetaModelName($event->getModel()->getProperty('pid'));
+        $objMetaModel  = $this->factory->getMetaModel($metaModelName);
+        $varValue      = $event->getValue();
 
         // Not translated, make it a plain string.
         if (!$objMetaModel->isTranslated()) {
