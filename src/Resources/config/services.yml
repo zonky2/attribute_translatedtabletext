@@ -10,6 +10,7 @@ services:
   metamodels.attribute_translatedtabletext.listeners.translated_alias_options:
     class: MetaModels\AttributeTranslatedTableTextBundle\EventListener\DcGeneral\Table\BackendTableListener
     arguments:
+      - '@cca.dc-general.scope-matcher'
       - '@metamodels.factory'
       - '@event_dispatcher'
     tags:

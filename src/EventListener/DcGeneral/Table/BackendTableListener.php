@@ -27,9 +27,12 @@ namespace MetaModels\AttributeTranslatedTableTextBundle\EventListener\DcGeneral\
 
 use ContaoCommunityAlliance\Contao\Bindings\ContaoEvents;
 use ContaoCommunityAlliance\Contao\Bindings\Events\System\LoadLanguageFileEvent;
+use ContaoCommunityAlliance\DcGeneral\Contao\RequestScopeDeterminator;
+use ContaoCommunityAlliance\DcGeneral\Contao\RequestScopeDeterminatorAwareTrait;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\BuildWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\DecodePropertyValueForWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\EncodePropertyValueFromWidgetEvent;
+use MetaModels\CoreBundle\EventListener\DcGeneral\Table\MetaModel\AbstractAbstainingListener;
 use MetaModels\IFactory;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -42,6 +45,8 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 class BackendTableListener
 {
+    use RequestScopeDeterminatorAwareTrait;
+
     /**
      * Metamodel factory.
      *
@@ -59,11 +64,17 @@ class BackendTableListener
     /**
      * BackendTableListener constructor.
      *
-     * @param IFactory                 $factory         Metamodel factory.
-     * @param EventDispatcherInterface $eventDispatcher Event dispatcher.
+     * @param RequestScopeDeterminator $scopeDeterminator Request scope determinator.
+     * @param IFactory                 $factory           Metamodel factory.
+     * @param EventDispatcherInterface $eventDispatcher   Event dispatcher.
      */
-    public function __construct(IFactory $factory, EventDispatcherInterface $eventDispatcher)
-    {
+    public function __construct(
+        RequestScopeDeterminator $scopeDeterminator,
+        IFactory $factory,
+        EventDispatcherInterface $eventDispatcher
+    ) {
+        $this->setScopeDeterminator($scopeDeterminator);
+
         $this->factory         = $factory;
         $this->eventDispatcher = $eventDispatcher;
     }
@@ -80,6 +91,10 @@ class BackendTableListener
      */
     public function fillExtraData(BuildWidgetEvent $event)
     {
+        if (!$this->scopeDeterminator->currentScopeIsBackend()) {
+            return;
+        }
+
         if (($event->getEnvironment()->getDataDefinition()->getName() !== 'tl_metamodel_attribute')
             || ($event->getProperty()->getName() !== 'translatedtabletext_cols')) {
             return;
@@ -173,6 +188,10 @@ class BackendTableListener
      */
     public function loadValues(DecodePropertyValueForWidgetEvent $event)
     {
+        if (!$this->scopeDeterminator->currentScopeIsBackend()) {
+            return;
+        }
+
         if (($event->getEnvironment()->getDataDefinition()->getName() !== 'tl_metamodel_attribute')
             || ($event->getProperty() !== 'translatedtabletext_cols')
             || ($event->getEnvironment()->getInputProvider()->getParameter('act') === 'select'
@@ -241,6 +260,10 @@ class BackendTableListener
      */
     public function saveValues(EncodePropertyValueFromWidgetEvent $event)
     {
+        if (!$this->scopeDeterminator->currentScopeIsBackend()) {
+            return;
+        }
+
         if (($event->getEnvironment()->getDataDefinition()->getName() !== 'tl_metamodel_attribute')
             || ($event->getProperty() !== 'translatedtabletext_cols')) {
             return;
