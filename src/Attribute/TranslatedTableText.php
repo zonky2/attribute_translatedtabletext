@@ -64,10 +64,12 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
         parent::__construct($objMetaModel, $arrData);
 
         if (null === $connection) {
+            // @codingStandardsIgnoreStart
             @trigger_error(
                 'Connection is missing. It has to be passed in the constructor. Fallback will be dropped.',
                 E_USER_DEPRECATED
             );
+            // @codingStandardsIgnoreEnd
             $connection = System::getContainer()->get('database_connection');
         }
 
@@ -375,8 +377,8 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
                             ->setParameter($name, $value);
                     }
 
-                    $updateSql  = $queryBuilder->getSQL();
-                    $sql       .= ' ON DUPLICATE KEY ' . str_replace($this->getValueTable() . ' SET ', '', $updateSql);
+                    $updateSql = $queryBuilder->getSQL();
+                    $sql      .= ' ON DUPLICATE KEY ' . str_replace($this->getValueTable() . ' SET ', '', $updateSql);
 
                     $this->connection->executeQuery($sql, $parameters);
                 }

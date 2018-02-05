@@ -13,7 +13,6 @@
  * @package    MetaModels
  * @subpackage AttributeTranslatedTableText
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author     David Greminger <david.greminger@1up.io>
  * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
  * @filesource
