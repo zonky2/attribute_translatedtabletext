@@ -1,32 +1,36 @@
 <?php
 
 /**
- * The MetaModels extension allows the creation of multiple collections of custom items,
- * each with its own unique set of selectable attributes, with attribute extendability.
- * The Front-End modules allow you to build powerful listing and filtering of the
- * data in each collection.
+ * This file is part of MetaModels/attribute_translatedtabletext.
+ *
+ * (c) 2012-2018 The MetaModels team.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
  *
  * @package    MetaModels
- * @subpackage Tests
+ * @subpackage AttributeTranslatedTableText
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @copyright  2012-2016 The MetaModels team.
+ * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
 
-namespace MetaModels\Test\Attribute\TranslatedTableText;
+namespace MetaModels\AttributeTranslatedTableTextBundle\Test\Attribute;
 
-use MetaModels\Attribute\IAttributeTypeFactory;
-use MetaModels\Attribute\TranslatedTableText\AttributeTypeFactory;
+use Doctrine\DBAL\Connection;
+use MetaModels\AttributeTranslatedTableTextBundle\Attribute\AttributeTypeFactory;
 use MetaModels\IMetaModel;
-use MetaModels\Test\Attribute\AttributeTypeFactoryTest;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Test the attribute factory.
  *
  * @package MetaModels\Test\Filter\Setting
  */
-class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTest
+class AttributeTypeFactoryTest extends TestCase
 {
     /**
      * Mock a MetaModel.
@@ -41,11 +45,7 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
      */
     protected function mockMetaModel($tableName, $language, $fallbackLanguage)
     {
-        $metaModel = $this->getMock(
-            'MetaModels\MetaModel',
-            array(),
-            array(array())
-        );
+        $metaModel = $this->getMockForAbstractClass('MetaModels\IMetaModel');
 
         $metaModel
             ->expects($this->any())
@@ -66,13 +66,15 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
     }
 
     /**
-     * Override the method to run the tests on the attribute factories to be tested.
+     * Mock the database connection.
      *
-     * @return IAttributeTypeFactory[]
+     * @return \PHPUnit_Framework_MockObject_MockObject|Connection
      */
-    protected function getAttributeFactories()
+    private function mockConnection()
     {
-        return array(new AttributeTypeFactory());
+        return $this->getMockBuilder(Connection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 
     /**
@@ -80,9 +82,9 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
      *
      * @return void
      */
-    public function testCreateSelect()
+    public function testCreateAttribute()
     {
-        $factory   = new AttributeTypeFactory();
+        $factory   = new AttributeTypeFactory($this->mockConnection());
         $values    = array(
             'translatedtabletext_cols' => serialize(
                 array(
@@ -104,7 +106,10 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
         $check                             = $values;
         $check['translatedtabletext_cols'] = unserialize($check['translatedtabletext_cols']);
 
-        $this->assertInstanceOf('MetaModels\Attribute\TranslatedTableText\TranslatedTableText', $attribute);
+        $this->assertInstanceOf(
+            'MetaModels\AttributeTranslatedTableTextBundle\Attribute\TranslatedTableText',
+            $attribute
+        );
 
         foreach ($check as $key => $value) {
             $this->assertEquals($value, $attribute->get($key), $key);
