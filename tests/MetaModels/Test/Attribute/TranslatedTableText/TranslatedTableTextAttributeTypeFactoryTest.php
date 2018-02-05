@@ -41,11 +41,11 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
      */
     protected function mockMetaModel($tableName, $language, $fallbackLanguage)
     {
-        $metaModel = $this->getMock(
-            'MetaModels\MetaModel',
-            array(),
-            array(array())
-        );
+        $metaModel = $this
+            ->getMockBuilder('MetaModels\MetaModel')
+            ->setMethods(array())
+            ->setConstructorArgs(array(array()))
+            ->getMock();
 
         $metaModel
             ->expects($this->any())

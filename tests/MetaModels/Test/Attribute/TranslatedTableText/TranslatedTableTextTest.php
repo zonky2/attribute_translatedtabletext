@@ -22,7 +22,7 @@ use MetaModels\Attribute\TranslatedTableText\TranslatedTableText;
 /**
  * Unit tests to test class GeoProtection.
  */
-class TranslatedTableTextTest extends \PHPUnit_Framework_TestCase
+class TranslatedTableTextTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * Mock a MetaModel.
@@ -34,11 +34,11 @@ class TranslatedTableTextTest extends \PHPUnit_Framework_TestCase
      */
     protected function mockMetaModel($language, $fallbackLanguage)
     {
-        $metaModel = $this->getMock(
-            'MetaModels\MetaModel',
-            array(),
-            array(array())
-        );
+        $metaModel = $this
+            ->getMockBuilder('MetaModels\MetaModel')
+            ->setMethods(array())
+            ->setConstructorArgs(array(array()))
+            ->getMock();
 
         $metaModel
             ->expects($this->any())
