@@ -10,6 +10,7 @@
  * @subpackage Tests
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     David Greminger <david.greminger@1up.io>
+ * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @copyright  2012-2016 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
  * @filesource
