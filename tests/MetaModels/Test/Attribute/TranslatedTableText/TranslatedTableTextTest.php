@@ -10,6 +10,7 @@
  * @subpackage Tests
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     David Greminger <david.greminger@1up.io>
+ * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @copyright  2012-2016 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
  * @filesource
@@ -22,7 +23,7 @@ use MetaModels\Attribute\TranslatedTableText\TranslatedTableText;
 /**
  * Unit tests to test class GeoProtection.
  */
-class TranslatedTableTextTest extends \PHPUnit_Framework_TestCase
+class TranslatedTableTextTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * Mock a MetaModel.
@@ -34,11 +35,11 @@ class TranslatedTableTextTest extends \PHPUnit_Framework_TestCase
      */
     protected function mockMetaModel($language, $fallbackLanguage)
     {
-        $metaModel = $this->getMock(
-            'MetaModels\MetaModel',
-            array(),
-            array(array())
-        );
+        $metaModel = $this
+            ->getMockBuilder('MetaModels\MetaModel')
+            ->setMethods(array())
+            ->setConstructorArgs(array(array()))
+            ->getMock();
 
         $metaModel
             ->expects($this->any())

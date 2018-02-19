@@ -9,6 +9,7 @@
  * @package    MetaModels
  * @subpackage Tests
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @copyright  2012-2016 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
  * @filesource
@@ -41,11 +42,11 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
      */
     protected function mockMetaModel($tableName, $language, $fallbackLanguage)
     {
-        $metaModel = $this->getMock(
-            'MetaModels\MetaModel',
-            array(),
-            array(array())
-        );
+        $metaModel = $this
+            ->getMockBuilder('MetaModels\MetaModel')
+            ->setMethods(array())
+            ->setConstructorArgs(array(array()))
+            ->getMock();
 
         $metaModel
             ->expects($this->any())
