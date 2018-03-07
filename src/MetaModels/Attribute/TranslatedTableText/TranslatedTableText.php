@@ -219,7 +219,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
     {
         $arrWhere = $this->getWhere($arrIds, $strLangCode);
         $strQuery = sprintf(
-            'SELECT * FROM %s %s ORDER BY row ASC, col ASC',
+            'SELECT * FROM %s%s ORDER BY item_id ASC, row ASC, col ASC',
             $this->getValueTable(),
             ($arrWhere ? ' WHERE ' . $arrWhere['procedure'] : '')
         );
@@ -230,12 +230,14 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
             ->prepare($strQuery)
             ->execute(($arrWhere ? $arrWhere['params'] : null));
 
-        $arrReturn = array();
+        $countCol = $this->get('tabletext_quantity_cols');
+        $result   = array();
         while ($objValue->next()) {
-            $arrReturn[$objValue->item_id][$objValue->row][] = $objValue->row();
+            $content = $objValue->row();
+            $this->pushValue($content, $result, $countCol, $strLangCode);
         }
 
-        return $arrReturn;
+        return $result;
     }
 
     /**
@@ -261,10 +263,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
         // Reset all data for the ids in language.
         $this->unsetValueFor($arrIds, $strLangCode);
 
-        // Insert or update the cells.
-        $strQueryUpdate = 'UPDATE %s';
         $strQueryInsert = 'INSERT INTO ' . $this->getValueTable() . ' %s';
-
         foreach ($arrIds as $intId) {
             // Walk every row.
             foreach ($arrValues[$intId] as $row) {
@@ -275,18 +274,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
                         continue;
                     }
                     $objDB
-                        ->prepare(
-                            $strQueryInsert .
-                            ' ON DUPLICATE KEY ' .
-                            str_replace(
-                                'SET ',
-                                '',
-                                $objDB
-                                    ->prepare($strQueryUpdate)
-                                    ->set($values)
-                                    ->query
-                            )
-                        )
+                        ->prepare($strQueryInsert)
                         ->set($values)
                         ->execute();
                 }
@@ -387,5 +375,48 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
         $objDB
             ->prepare($strQuery)
             ->execute(($arrWhere ? $arrWhere['params'] : null));
+    }
+
+    /**
+     * Push a database value to the passed array.
+     *
+     * @param array  $value        The value from the database.
+     * @param array  $result       The result list.
+     * @param int    $countCol     The count of columns per row.
+     * @param string $languageCode The language code to use for empty cells.
+     *
+     * @return void
+     */
+    private function pushValue($value, &$result, $countCol, $languageCode)
+    {
+        $buildRow = function (&$list, $itemId, $row) use ($countCol, $languageCode) {
+            for ($i = count($list); $i < $countCol; $i++) {
+                $list[$i] = [
+                    'tstamp'   => 0,
+                    'value'    => '',
+                    'att_id'   => $this->get('id'),
+                    'row'      => $row,
+                    'col'      => $i,
+                    'item_id'  => $itemId,
+                    'langcode' => $languageCode
+                ];
+            }
+        };
+
+        $itemId = $value['item_id'];
+        if (!isset($result[$itemId])) {
+            $result[$itemId] = [];
+        }
+
+        // Prepare all rows up until to this item.
+        $row = count($result[$itemId]);
+        while ($row <= $value['row']) {
+            if (!isset($result[$itemId][$row])) {
+                $result[$itemId][$row] = [];
+            }
+            $buildRow($result[$itemId][$row], $itemId, $row);
+            $row++;
+        }
+        $result[$itemId][(int) $value['row']][(int) $value['col']] = $value;
     }
 }
