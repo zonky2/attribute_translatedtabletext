@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_translatedtabletext.
  *
- * (c) 2012-2017 The MetaModels team.
+ * (c) 2012-2018 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -18,8 +18,9 @@
  * @author     Andreas Isaak <andy.jared@googlemail.com>
  * @author     David Greminger <david.greminger@1up.io>
  * @author     Ingolf Steinhardt <info@e-spin.de>
- * @copyright  2012-2017 The MetaModels team.
- * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2018 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
@@ -259,7 +260,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
 
         // Get the ids.
         $arrIds = array_keys($arrValues);
-        
+
         // Reset all data for the ids in language.
         $this->unsetValueFor($arrIds, $strLangCode);
 
