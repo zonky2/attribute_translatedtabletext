@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_translatedtabletext.
  *
- * (c) 2012-2017 The MetaModels team.
+ * (c) 2012-2018 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -16,7 +16,8 @@
  * @author     Andreas Isaak <andy.jared@googlemail.com>
  * @author     David Greminger <david.greminger@1up.io>
  * @author     Ingolf Steinhardt <info@e-spin.de>
- * @copyright  2012-2017 The MetaModels team.
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
@@ -35,5 +36,6 @@ $GLOBALS['TL_DCA']['tl_metamodel_rendersetting']['fields']['translatedtabletext_
     'eval'      => array
     (
         'tl_class' => 'clr w50'
-    )
+    ),
+    'sql'      => 'varchar(1) NOT NULL default \'0\''
 );

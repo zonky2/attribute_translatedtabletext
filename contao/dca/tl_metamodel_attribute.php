@@ -12,7 +12,7 @@
  * @author     Andreas Isaak <andy.jared@googlemail.com>
  * @author     David Greminger <david.greminger@1up.io>
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2017 The MetaModels team.
+ * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
@@ -69,6 +69,7 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['tabletext_quantity_cols'
     'default'   => 1,
     'options'   => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     'eval'      => ['tl_class' => 'clr m12', 'alwaysSave' => true, 'submitOnChange' => true],
+    'sql'       => 'varchar(2) NOT NULL default \'\''
 ];
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['translatedtabletext_cols'] = array(
@@ -114,4 +115,5 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['translatedtabletext_cols
             ),
         ),
     ),
+    'sql'   => 'blob NULL'
 );
