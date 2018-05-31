@@ -116,7 +116,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
     {
         $arrReturn = [
             'procedure' => 'att_id=?',
-            'params'    => [intval($this->get('id'))],
+            'params'    => [(int) $this->get('id')],
         ];
 
         if ($mixIds) {

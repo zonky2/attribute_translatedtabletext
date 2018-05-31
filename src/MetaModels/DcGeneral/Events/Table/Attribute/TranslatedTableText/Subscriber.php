@@ -80,7 +80,7 @@ class Subscriber extends BaseSubscriber
         // Check model and input for the cols and get the max value.
         $intModelCols = $model->getProperty('tabletext_quantity_cols');
         $intInputCols = $event->getEnvironment()->getInputProvider()->getValue('tabletext_quantity_cols');
-        $intCols      = \max(intval($intModelCols), intval($intInputCols));
+        $intCols      = \max((int) $intModelCols, (int) $intInputCols);
 
         // For new models, we might not have a value.
         if (!$intCols) {
@@ -177,7 +177,7 @@ class Subscriber extends BaseSubscriber
         // Check model and input for the cols and get the max value.
         $intModelCols = $event->getModel()->getProperty('tabletext_quantity_cols');
         $intInputCols = $event->getEnvironment()->getInputProvider()->getValue('tabletext_quantity_cols');
-        $intCols      = \max(intval($intModelCols), intval($intInputCols));
+        $intCols      = \max((int) $intModelCols, (int) $intInputCols);
 
         $varValue = $event->getValue();
 
