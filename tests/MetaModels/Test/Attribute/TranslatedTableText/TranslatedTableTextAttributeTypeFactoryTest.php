@@ -88,7 +88,7 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
     {
         $factory   = new AttributeTypeFactory();
         $values    = [
-            'translatedtabletext_cols' => serialize(
+            'translatedtabletext_cols' => \serialize(
                 [
                     'langcode'  => 'en',
                     'rowLabels' => [
@@ -106,7 +106,7 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
         );
 
         $check                             = $values;
-        $check['translatedtabletext_cols'] = unserialize($check['translatedtabletext_cols']);
+        $check['translatedtabletext_cols'] = \unserialize($check['translatedtabletext_cols']);
 
         $this->assertInstanceOf(TranslatedTableText::class, $attribute);
 

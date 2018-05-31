@@ -67,11 +67,11 @@ class TranslatedTableTextTest extends TestCase
             ->getMock();
 
         $mockQueries->expects($this->exactly(5))->method('set')->withConsecutive(
-            [$this->langRow(time(), '1', 42, 0, 0, 21, 'en')],
-            [$this->langRow(time(), '2', 42, 0, 1, 21, 'en')],
-            [$this->langRow(time(), '3', 42, 0, 2, 21, 'en')],
-            [$this->langRow(time(), '4', 42, 2, 0, 21, 'en')],
-            [$this->langRow(time(), '6', 42, 2, 2, 21, 'en')]
+            [$this->langRow(\time(), '1', 42, 0, 0, 21, 'en')],
+            [$this->langRow(\time(), '2', 42, 0, 1, 21, 'en')],
+            [$this->langRow(\time(), '3', 42, 0, 2, 21, 'en')],
+            [$this->langRow(\time(), '4', 42, 2, 0, 21, 'en')],
+            [$this->langRow(\time(), '6', 42, 2, 2, 21, 'en')]
         )->willReturn($mockQueries);
 
         $mockDB->expects($this->exactly(6))->method('prepare')->withConsecutive(
