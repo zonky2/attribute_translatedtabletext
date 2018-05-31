@@ -5,7 +5,7 @@ $strActiveLang   = array_key_exists($strActiveLang, $this->attribute->getMetaMod
                                     $strActiveLang :
                                     $strFallbackLang;
 ?>
-<table class="tabletext<?php echo $this->additional_class; ?>">
+<table class="tabletext<?= $this->additional_class; ?>">
 <?php $countCol = count($this->attribute->get('translatedtabletext_cols')[$strFallbackLang]); if (!$this->settings->get('translatedtabletext_hide_tablehead')) : ?>
     <thead>
         <tr>
