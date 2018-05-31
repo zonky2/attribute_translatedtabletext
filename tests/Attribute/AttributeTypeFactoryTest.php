@@ -16,7 +16,7 @@
  * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @copyright  2012-2018 The MetaModels team.
- * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
+ * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
@@ -26,6 +26,7 @@ use Doctrine\DBAL\Connection;
 use MetaModels\AttributeTranslatedTableTextBundle\Attribute\AttributeTypeFactory;
 use MetaModels\IMetaModel;
 use PHPUnit\Framework\TestCase;
+use MetaModels\AttributeTranslatedTableTextBundle\Attribute\TranslatedTableText;
 
 /**
  * Test the attribute factory.
@@ -87,31 +88,28 @@ class AttributeTypeFactoryTest extends TestCase
     public function testCreateAttribute()
     {
         $factory   = new AttributeTypeFactory($this->mockConnection());
-        $values    = array(
-            'translatedtabletext_cols' => serialize(
-                array(
+        $values    = [
+            'translatedtabletext_cols' => \serialize(
+                [
                     'langcode'  => 'en',
-                    'rowLabels' => array(
-                        array(
+                    'rowLabels' => [
+                        [
                             'rowLabel' => 'rowlabel',
                             'rowStyle' => 'rowstyle'
-                        )
-                    )
-                )
+                        ]
+                    ]
+                ]
             )
-        );
+        ];
         $attribute = $factory->createInstance(
             $values,
             $this->mockMetaModel('mm_test', 'de', 'en')
         );
 
         $check                             = $values;
-        $check['translatedtabletext_cols'] = unserialize($check['translatedtabletext_cols']);
+        $check['translatedtabletext_cols'] = \unserialize($check['translatedtabletext_cols']);
 
-        $this->assertInstanceOf(
-            'MetaModels\AttributeTranslatedTableTextBundle\Attribute\TranslatedTableText',
-            $attribute
-        );
+        $this->assertInstanceOf(TranslatedTableText::class, $attribute);
 
         foreach ($check as $key => $value) {
             $this->assertEquals($value, $attribute->get($key), $key);

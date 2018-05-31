@@ -13,6 +13,7 @@
  * @package    MetaModels
  * @subpackage AttributeTranslatedTableText
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Sven Baumann <baumann.sv@gmail.com>
  * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
  * @filesource
@@ -41,7 +42,7 @@ class TranslatedTableTextTest extends TestCase
      */
     protected function mockMetaModel($language, $fallbackLanguage)
     {
-        $metaModel = $this->getMockForAbstractClass('MetaModels\IMetaModel');
+        $metaModel = $this->getMockForAbstractClass(IMetaModel::class);
 
         $metaModel
             ->expects($this->any())
@@ -84,6 +85,6 @@ class TranslatedTableTextTest extends TestCase
             [],
             $this->mockConnection()
         );
-        $this->assertInstanceOf('MetaModels\Attribute\TranslatedTableText\TranslatedTableText', $text);
+        $this->assertInstanceOf(TranslatedTableText::class, $text);
     }
 }

@@ -18,8 +18,8 @@
  * @author     David Greminger <david.greminger@1up.io>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @author     David Molineus <david.molineus@netzmacht.de>
- * @copyright  2012-2017 The MetaModels team.
- * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
+ * @copyright  2012-2018 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
@@ -32,7 +32,6 @@ use ContaoCommunityAlliance\DcGeneral\Contao\RequestScopeDeterminatorAwareTrait;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\BuildWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\DecodePropertyValueForWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\EncodePropertyValueFromWidgetEvent;
-use MetaModels\CoreBundle\EventListener\DcGeneral\Table\MetaModel\AbstractAbstainingListener;
 use MetaModels\IFactory;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -108,7 +107,7 @@ class BackendTableListener
         // Check model and input for the cols and get the max value.
         $intModelCols = $model->getProperty('tabletext_quantity_cols');
         $intInputCols = $event->getEnvironment()->getInputProvider()->getValue('tabletext_quantity_cols');
-        $intCols      = max(intval($intModelCols), intval($intInputCols));
+        $intCols      = \max((int) $intModelCols, (int) $intInputCols);
 
         // For new models, we might not have a value.
         if (!$intCols) {
@@ -120,16 +119,16 @@ class BackendTableListener
         }
 
         $attribute = $objMetaModel->getAttributeById($model->getProperty('id'));
-        $arrValues = $attribute ? $attribute->get('name') : array();
+        $arrValues = $attribute ? $attribute->get('name') : [];
 
         $languageEvent = new LoadLanguageFileEvent('languages');
         $this->eventDispatcher->dispatch(ContaoEvents::SYSTEM_LOAD_LANGUAGE_FILE, $languageEvent);
 
-        $arrLanguages = array();
+        $arrLanguages = [];
         foreach ((array) $objMetaModel->getAvailableLanguages() as $strLangCode) {
             $arrLanguages[$strLangCode] = $translator->translate($strLangCode, 'LNG');
         }
-        asort($arrLanguages);
+        \asort($arrLanguages);
 
         // Ensure we have the values present.
         if (empty($arrValues)) {
@@ -138,16 +137,16 @@ class BackendTableListener
             }
         }
 
-        $arrRowClasses = array();
-        foreach (array_keys(deserialize($arrValues)) as $strLangcode) {
+        $arrRowClasses = [];
+        foreach (\array_keys(\deserialize($arrValues)) as $strLangcode) {
             $arrRowClasses[] = ($strLangcode == $objMetaModel->getFallbackLanguage())
                 ? 'fallback_language'
                 : 'normal_language';
         }
 
         $data                                      = $event->getProperty()->getExtra();
-        $data['minCount']                          = count($arrLanguages);
-        $data['maxCount']                          = count($arrLanguages);
+        $data['minCount']                          = \count($arrLanguages);
+        $data['maxCount']                          = \count($arrLanguages);
         $data['columnFields']['langcode']['label'] = $translator->translate(
             'name_langcode',
             'tl_metamodel_attribute'
@@ -207,22 +206,22 @@ class BackendTableListener
         // Check model and input for the cols and get the max value.
         $intModelCols = $event->getModel()->getProperty('tabletext_quantity_cols');
         $intInputCols = $event->getEnvironment()->getInputProvider()->getValue('tabletext_quantity_cols');
-        $intCols      = max(intval($intModelCols), intval($intInputCols));
+        $intCols      = \max((int) $intModelCols, (int) $intInputCols);
 
         $varValue = $event->getValue();
 
         // Kick unused lines.
         foreach ((array) $varValue as $strLanguage => $arrRows) {
-            if (count($arrRows) > $intCols) {
+            if (\count($arrRows) > $intCols) {
                 $varValue[$strLanguage] = array_slice($varValue[$strLanguage], 0, $intCols);
             }
         }
 
-        $arrLangValues = deserialize($varValue);
+        $arrLangValues = \deserialize($varValue);
         if (!$objMetaModel->isTranslated()) {
             // If we have an array, return the first value and exit, if not an array, return the value itself.
-            if (is_array($arrLangValues)) {
-                $event->setValue($arrLangValues[key($arrLangValues)]);
+            if (\is_array($arrLangValues)) {
+                $event->setValue($arrLangValues[\key($arrLangValues)]);
             } else {
                 $event->setValue($arrLangValues);
             }
@@ -230,25 +229,25 @@ class BackendTableListener
             return;
         }
 
-        $arrOutput = array();
+        $arrOutput = [];
         // Sort like in MetaModel definition.
         if ($arrLanguages) {
             foreach ($arrLanguages as $strLangCode) {
-                if (is_array($arrLangValues)) {
+                if (\is_array($arrLangValues)) {
                     $varSubValue = $arrLangValues[$strLangCode];
                 } else {
                     $varSubValue = $arrLangValues;
                 }
 
-                if (is_array($varSubValue)) {
-                    $arrOutput[] = array('langcode' => $strLangCode, 'rowLabels' => $varSubValue);
+                if (\is_array($varSubValue)) {
+                    $arrOutput[] = ['langcode' => $strLangCode, 'rowLabels' => $varSubValue];
                 } else {
-                    $arrOutput[] = array('langcode' => $strLangCode, 'value' => $varSubValue);
+                    $arrOutput[] = ['langcode' => $strLangCode, 'value' => $varSubValue];
                 }
             }
         }
 
-        $event->setValue(serialize($arrOutput));
+        $event->setValue(\serialize($arrOutput));
     }
 
     /**
@@ -275,26 +274,26 @@ class BackendTableListener
 
         // Not translated, make it a plain string.
         if (!$objMetaModel->isTranslated()) {
-            $event->setValue(serialize($varValue));
+            $event->setValue(\serialize($varValue));
 
             return;
         }
 
-        $arrLangValues = deserialize($varValue);
-        $arrOutput     = array();
+        $arrLangValues = \deserialize($varValue);
+        $arrOutput     = [];
 
         foreach ($arrLangValues as $varSubValue) {
             $strLangCode = $varSubValue['langcode'];
             unset($varSubValue['langcode']);
-            if (count($varSubValue) > 1) {
+            if (\count($varSubValue) > 1) {
                 $arrOutput[$strLangCode] = $varSubValue;
             } else {
-                $arrKeys = array_keys($varSubValue);
+                $arrKeys = \array_keys($varSubValue);
 
                 $arrOutput[$strLangCode] = $varSubValue[$arrKeys[0]];
             }
         }
 
-        $event->setValue(serialize($arrOutput));
+        $event->setValue(\serialize($arrOutput));
     }
 }
