@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_translatedtabletext.
  *
- * (c) 2012-2017 The MetaModels team.
+ * (c) 2012-2018 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -18,16 +18,17 @@
  * @author     Andreas Isaak <andy.jared@googlemail.com>
  * @author     David Greminger <david.greminger@1up.io>
  * @author     Ingolf Steinhardt <info@e-spin.de>
- * @copyright  2012-2017 The MetaModels team.
- * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2018 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
 namespace MetaModels\Attribute\TranslatedTableText;
 
 use MetaModels\Attribute\Base;
-use MetaModels\Attribute\ITranslated;
 use MetaModels\Attribute\IComplex;
+use MetaModels\Attribute\ITranslated;
 
 /**
  * This is the MetaModelAttribute class for handling translated table text fields.
@@ -39,10 +40,13 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     public function getAttributeSettingNames()
     {
-        return array_merge(parent::getAttributeSettingNames(), array(
-            'translatedtabletext_cols',
-            'tabletext_quantity_cols',
-        ));
+        return \array_merge(
+            parent::getAttributeSettingNames(),
+            [
+                'translatedtabletext_cols',
+                'tabletext_quantity_cols',
+            ]
+        );
     }
 
     /**
@@ -58,33 +62,33 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
     /**
      * {@inheritDoc}
      */
-    public function getFieldDefinition($arrOverrides = array())
+    public function getFieldDefinition($arrOverrides = [])
     {
         $strActiveLanguage   = $this->getMetaModel()->getActiveLanguage();
         $strFallbackLanguage = $this->getMetaModel()->getFallbackLanguage();
-        $arrAllColLabels     = deserialize($this->get('translatedtabletext_cols'), true);
+        $arrAllColLabels     = \deserialize($this->get('translatedtabletext_cols'), true);
         $arrColLabels        = null;
 
-        if (array_key_exists($strActiveLanguage, $arrAllColLabels)) {
+        if (\array_key_exists($strActiveLanguage, $arrAllColLabels)) {
             $arrColLabels = $arrAllColLabels[$strActiveLanguage];
-        } elseif (array_key_exists($strFallbackLanguage, $arrAllColLabels)) {
+        } elseif (\array_key_exists($strFallbackLanguage, $arrAllColLabels)) {
             $arrColLabels = $arrAllColLabels[$strFallbackLanguage];
         } else {
-            $arrColLabels = array_shift($arrAllColLabels);
+            $arrColLabels = \array_shift($arrAllColLabels);
         }
 
         // Build DCA.
         $arrFieldDef                         = parent::getFieldDefinition($arrOverrides);
         $arrFieldDef['inputType']            = 'multiColumnWizard';
-        $arrFieldDef['eval']['columnFields'] = array();
+        $arrFieldDef['eval']['columnFields'] = [];
 
-        $countCol = count($arrColLabels);
+        $countCol = \count($arrColLabels);
         for ($i = 0; $i < $countCol; $i++) {
-            $arrFieldDef['eval']['columnFields']['col_' . $i] = array(
-                'label' => $arrColLabels[$i]['rowLabel'],
+            $arrFieldDef['eval']['columnFields']['col_' . $i] = [
+                'label'     => $arrColLabels[$i]['rowLabel'],
                 'inputType' => 'text',
-                'eval' => array(),
-            );
+                'eval'      => [],
+            ];
 
             if ($arrColLabels[$i]['rowStyle']) {
                 $arrFieldDef['eval']['columnFields']['col_' . $i]['eval']['style'] =
@@ -110,22 +114,22 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     protected function getWhere($mixIds, $strLangCode = null, $intRow = null, $intCol = null)
     {
-        $arrReturn = array(
+        $arrReturn = [
             'procedure' => 'att_id=?',
-            'params' => array(intval($this->get('id'))),
-        );
+            'params'    => [(int) $this->get('id')],
+        ];
 
         if ($mixIds) {
-            if (is_array($mixIds)) {
+            if (\is_array($mixIds)) {
                 $arrReturn['procedure'] .= ' AND item_id IN (' . $this->parameterMask($mixIds) . ')';
-                $arrReturn['params']     = array_merge($arrReturn['params'], $mixIds);
+                $arrReturn['params']     = \array_merge($arrReturn['params'], $mixIds);
             } else {
                 $arrReturn['procedure'] .= ' AND item_id=?';
                 $arrReturn['params'][]   = $mixIds;
             }
         }
 
-        if (is_int($intRow) && is_int($intCol)) {
+        if (\is_int($intRow) && \is_int($intCol)) {
             $arrReturn['procedure'] .= ' AND row = ? AND col = ?';
             $arrReturn['params'][]   = $intRow;
             $arrReturn['params'][]   = $intCol;
@@ -144,16 +148,16 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     public function valueToWidget($varValue)
     {
-        if (!is_array($varValue)) {
-            return array();
+        if (!\is_array($varValue)) {
+            return [];
         }
 
         $countCol    = $this->get('tabletext_quantity_cols');
-        $widgetValue = array();
+        $widgetValue = [];
 
         foreach ($varValue as $k => $row) {
             for ($kk = 0; $kk < $countCol; $kk++) {
-                $i = array_search($kk, array_column($row, 'col'));
+                $i = \array_search($kk, \array_column($row, 'col'));
 
                 $widgetValue[$k]['col_' . $kk] = ($i !== false) ? $row[$i]['value'] : '';
             }
@@ -167,16 +171,16 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     public function widgetToValue($varValue, $itemId)
     {
-        if (!is_array($varValue)) {
+        if (!\is_array($varValue)) {
             return null;
         }
 
-        $newValue = array();
+        $newValue = [];
         // Start row numerator at 0.
         $intRow = 0;
         foreach ($varValue as $k => $row) {
             foreach ($row as $kk => $col) {
-                $kk = str_replace('col_', '', $kk);
+                $kk = \str_replace('col_', '', $kk);
 
                 $newValue[$k][$kk]['value'] = $col;
                 $newValue[$k][$kk]['col']   = $kk;
@@ -202,7 +206,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
     protected function getSetValues($arrCell, $intId, $strLangCode)
     {
         return array(
-            'tstamp'   => time(),
+            'tstamp'   => \time(),
             'value'    => (string) $arrCell['value'],
             'att_id'   => $this->get('id'),
             'row'      => (int) $arrCell['row'],
@@ -218,8 +222,8 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
     public function getTranslatedDataFor($arrIds, $strLangCode)
     {
         $arrWhere = $this->getWhere($arrIds, $strLangCode);
-        $strQuery = sprintf(
-            'SELECT * FROM %s %s ORDER BY row ASC, col ASC',
+        $strQuery = \sprintf(
+            'SELECT * FROM %s%s ORDER BY item_id ASC, row ASC, col ASC',
             $this->getValueTable(),
             ($arrWhere ? ' WHERE ' . $arrWhere['procedure'] : '')
         );
@@ -230,12 +234,14 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
             ->prepare($strQuery)
             ->execute(($arrWhere ? $arrWhere['params'] : null));
 
-        $arrReturn = array();
+        $countCol = $this->get('tabletext_quantity_cols');
+        $result   = [];
         while ($objValue->next()) {
-            $arrReturn[$objValue->item_id][$objValue->row][] = $objValue->row();
+            $content = $objValue->row();
+            $this->pushValue($content, $result, $countCol, $strLangCode);
         }
 
-        return $arrReturn;
+        return $result;
     }
 
     /**
@@ -243,9 +249,9 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function searchForInLanguages($strPattern, $arrLanguages = array())
+    public function searchForInLanguages($strPattern, $arrLanguages = [])
     {
-        return array();
+        return [];
     }
 
     /**
@@ -256,15 +262,12 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
         $objDB = $this->getMetaModel()->getServiceContainer()->getDatabase();
 
         // Get the ids.
-        $arrIds = array_keys($arrValues);
-        
+        $arrIds = \array_keys($arrValues);
+
         // Reset all data for the ids in language.
         $this->unsetValueFor($arrIds, $strLangCode);
 
-        // Insert or update the cells.
-        $strQueryUpdate = 'UPDATE %s';
         $strQueryInsert = 'INSERT INTO ' . $this->getValueTable() . ' %s';
-
         foreach ($arrIds as $intId) {
             // Walk every row.
             foreach ($arrValues[$intId] as $row) {
@@ -275,18 +278,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
                         continue;
                     }
                     $objDB
-                        ->prepare(
-                            $strQueryInsert .
-                            ' ON DUPLICATE KEY ' .
-                            str_replace(
-                                'SET ',
-                                '',
-                                $objDB
-                                    ->prepare($strQueryUpdate)
-                                    ->set($values)
-                                    ->query
-                            )
-                        )
+                        ->prepare($strQueryInsert)
                         ->set($values)
                         ->execute();
                 }
@@ -315,7 +307,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
-        return array();
+        return [];
     }
 
     /**
@@ -341,8 +333,8 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
         $arrReturn = $this->getTranslatedDataFor($arrIds, $strActiveLanguage);
 
         // Second round, fetch fallback languages if not all items could be resolved.
-        if ((count($arrReturn) < count($arrIds)) && ($strActiveLanguage != $strFallbackLanguage)) {
-            $arrFallbackIds = array();
+        if ((\count($arrReturn) < \count($arrIds)) && ($strActiveLanguage != $strFallbackLanguage)) {
+            $arrFallbackIds = [];
             foreach ($arrIds as $intId) {
                 if (empty($arrReturn[$intId])) {
                     $arrFallbackIds[] = $intId;
@@ -369,7 +361,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     public function unsetDataFor($arrIds)
     {
-        if (!is_array($arrIds)) {
+        if (!\is_array($arrIds)) {
             throw new \RuntimeException(
                 'TranslatedTableText::unsetDataFor() invalid parameter given! Array of ids is needed.',
                 1
@@ -387,5 +379,48 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
         $objDB
             ->prepare($strQuery)
             ->execute(($arrWhere ? $arrWhere['params'] : null));
+    }
+
+    /**
+     * Push a database value to the passed array.
+     *
+     * @param array  $value        The value from the database.
+     * @param array  $result       The result list.
+     * @param int    $countCol     The count of columns per row.
+     * @param string $languageCode The language code to use for empty cells.
+     *
+     * @return void
+     */
+    private function pushValue($value, &$result, $countCol, $languageCode)
+    {
+        $buildRow = function (&$list, $itemId, $row) use ($countCol, $languageCode) {
+            for ($i = \count($list); $i < $countCol; $i++) {
+                $list[$i] = [
+                    'tstamp'   => 0,
+                    'value'    => '',
+                    'att_id'   => $this->get('id'),
+                    'row'      => $row,
+                    'col'      => $i,
+                    'item_id'  => $itemId,
+                    'langcode' => $languageCode
+                ];
+            }
+        };
+
+        $itemId = $value['item_id'];
+        if (!isset($result[$itemId])) {
+            $result[$itemId] = [];
+        }
+
+        // Prepare all rows up until to this item.
+        $row = \count($result[$itemId]);
+        while ($row <= $value['row']) {
+            if (!isset($result[$itemId][$row])) {
+                $result[$itemId][$row] = [];
+            }
+            $buildRow($result[$itemId][$row], $itemId, $row);
+            $row++;
+        }
+        $result[$itemId][(int) $value['row']][(int) $value['col']] = $value;
     }
 }

@@ -11,14 +11,17 @@
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Andreas Isaak <andy.jared@googlemail.com>
  * @author     David Greminger <david.greminger@1up.io>
- * @copyright  2012-2016 The MetaModels team.
- * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2018 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
 /**
  * Register the templates
  */
-TemplateLoader::addFiles(array(
-    'mm_attr_translatedtabletext' => 'system/modules/metamodelsattribute_translatedtabletext/templates',
-));
+\Contao\TemplateLoader::addFiles(
+    [
+        'mm_attr_translatedtabletext' => 'system/modules/metamodelsattribute_translatedtabletext/templates',
+    ]
+);

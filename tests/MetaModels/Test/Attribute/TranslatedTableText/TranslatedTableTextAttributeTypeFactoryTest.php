@@ -10,8 +10,9 @@
  * @subpackage Tests
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Stefan Heimes <stefan_heimes@hotmail.com>
- * @copyright  2012-2016 The MetaModels team.
- * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2018 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
@@ -21,6 +22,8 @@ use MetaModels\Attribute\IAttributeTypeFactory;
 use MetaModels\Attribute\TranslatedTableText\AttributeTypeFactory;
 use MetaModels\IMetaModel;
 use MetaModels\Test\Attribute\AttributeTypeFactoryTest;
+use MetaModels\MetaModel;
+use MetaModels\Attribute\TranslatedTableText\TranslatedTableText;
 
 /**
  * Test the attribute factory.
@@ -43,9 +46,9 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
     protected function mockMetaModel($tableName, $language, $fallbackLanguage)
     {
         $metaModel = $this
-            ->getMockBuilder('MetaModels\MetaModel')
-            ->setMethods(array())
-            ->setConstructorArgs(array(array()))
+            ->getMockBuilder(MetaModel::class)
+            ->setMethods([])
+            ->setConstructorArgs([[]])
             ->getMock();
 
         $metaModel
@@ -73,7 +76,7 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
      */
     protected function getAttributeFactories()
     {
-        return array(new AttributeTypeFactory());
+        return [new AttributeTypeFactory()];
     }
 
     /**
@@ -84,28 +87,28 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
     public function testCreateSelect()
     {
         $factory   = new AttributeTypeFactory();
-        $values    = array(
-            'translatedtabletext_cols' => serialize(
-                array(
+        $values    = [
+            'translatedtabletext_cols' => \serialize(
+                [
                     'langcode'  => 'en',
-                    'rowLabels' => array(
-                        array(
+                    'rowLabels' => [
+                        [
                             'rowLabel' => 'rowlabel',
                             'rowStyle' => 'rowstyle'
-                        )
-                    )
-                )
+                        ]
+                    ]
+                ]
             )
-        );
+        ];
         $attribute = $factory->createInstance(
             $values,
             $this->mockMetaModel('mm_test', 'de', 'en')
         );
 
         $check                             = $values;
-        $check['translatedtabletext_cols'] = unserialize($check['translatedtabletext_cols']);
+        $check['translatedtabletext_cols'] = \unserialize($check['translatedtabletext_cols']);
 
-        $this->assertInstanceOf('MetaModels\Attribute\TranslatedTableText\TranslatedTableText', $attribute);
+        $this->assertInstanceOf(TranslatedTableText::class, $attribute);
 
         foreach ($check as $key => $value) {
             $this->assertEquals($value, $attribute->get($key), $key);

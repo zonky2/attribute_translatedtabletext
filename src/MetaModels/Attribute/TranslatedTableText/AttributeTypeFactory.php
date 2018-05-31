@@ -8,8 +8,9 @@
  * @package    MetaModels
  * @subpackage AttributeTranslatedTableText
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @copyright  2012-2016 The MetaModels team.
- * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2018 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
@@ -30,6 +31,6 @@ class AttributeTypeFactory extends AbstractAttributeTypeFactory
         parent::__construct();
         $this->typeName  = 'translatedtabletext';
         $this->typeIcon  = 'system/modules/metamodelsattribute_translatedtabletext/html/translatedtabletext.png';
-        $this->typeClass = 'MetaModels\Attribute\TranslatedTableText\TranslatedTableText';
+        $this->typeClass = TranslatedTableText::class;
     }
 }
