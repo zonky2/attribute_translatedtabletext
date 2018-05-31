@@ -27,8 +27,8 @@
 namespace MetaModels\Attribute\TranslatedTableText;
 
 use MetaModels\Attribute\Base;
-use MetaModels\Attribute\ITranslated;
 use MetaModels\Attribute\IComplex;
+use MetaModels\Attribute\ITranslated;
 
 /**
  * This is the MetaModelAttribute class for handling translated table text fields.
@@ -40,10 +40,13 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     public function getAttributeSettingNames()
     {
-        return array_merge(parent::getAttributeSettingNames(), array(
-            'translatedtabletext_cols',
-            'tabletext_quantity_cols',
-        ));
+        return array_merge(
+            parent::getAttributeSettingNames(),
+            [
+                'translatedtabletext_cols',
+                'tabletext_quantity_cols',
+            ]
+        );
     }
 
     /**
@@ -59,7 +62,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
     /**
      * {@inheritDoc}
      */
-    public function getFieldDefinition($arrOverrides = array())
+    public function getFieldDefinition($arrOverrides = [])
     {
         $strActiveLanguage   = $this->getMetaModel()->getActiveLanguage();
         $strFallbackLanguage = $this->getMetaModel()->getFallbackLanguage();
@@ -77,15 +80,15 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
         // Build DCA.
         $arrFieldDef                         = parent::getFieldDefinition($arrOverrides);
         $arrFieldDef['inputType']            = 'multiColumnWizard';
-        $arrFieldDef['eval']['columnFields'] = array();
+        $arrFieldDef['eval']['columnFields'] = [];
 
         $countCol = count($arrColLabels);
         for ($i = 0; $i < $countCol; $i++) {
-            $arrFieldDef['eval']['columnFields']['col_' . $i] = array(
-                'label' => $arrColLabels[$i]['rowLabel'],
+            $arrFieldDef['eval']['columnFields']['col_' . $i] = [
+                'label'     => $arrColLabels[$i]['rowLabel'],
                 'inputType' => 'text',
-                'eval' => array(),
-            );
+                'eval'      => [],
+            ];
 
             if ($arrColLabels[$i]['rowStyle']) {
                 $arrFieldDef['eval']['columnFields']['col_' . $i]['eval']['style'] =
@@ -111,10 +114,10 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     protected function getWhere($mixIds, $strLangCode = null, $intRow = null, $intCol = null)
     {
-        $arrReturn = array(
+        $arrReturn = [
             'procedure' => 'att_id=?',
-            'params' => array(intval($this->get('id'))),
-        );
+            'params'    => [intval($this->get('id'))],
+        ];
 
         if ($mixIds) {
             if (is_array($mixIds)) {
@@ -146,11 +149,11 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
     public function valueToWidget($varValue)
     {
         if (!is_array($varValue)) {
-            return array();
+            return [];
         }
 
         $countCol    = $this->get('tabletext_quantity_cols');
-        $widgetValue = array();
+        $widgetValue = [];
 
         foreach ($varValue as $k => $row) {
             for ($kk = 0; $kk < $countCol; $kk++) {
@@ -172,7 +175,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
             return null;
         }
 
-        $newValue = array();
+        $newValue = [];
         // Start row numerator at 0.
         $intRow = 0;
         foreach ($varValue as $k => $row) {
@@ -232,7 +235,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
             ->execute(($arrWhere ? $arrWhere['params'] : null));
 
         $countCol = $this->get('tabletext_quantity_cols');
-        $result   = array();
+        $result   = [];
         while ($objValue->next()) {
             $content = $objValue->row();
             $this->pushValue($content, $result, $countCol, $strLangCode);
@@ -246,9 +249,9 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function searchForInLanguages($strPattern, $arrLanguages = array())
+    public function searchForInLanguages($strPattern, $arrLanguages = [])
     {
-        return array();
+        return [];
     }
 
     /**
@@ -331,7 +334,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
 
         // Second round, fetch fallback languages if not all items could be resolved.
         if ((count($arrReturn) < count($arrIds)) && ($strActiveLanguage != $strFallbackLanguage)) {
-            $arrFallbackIds = array();
+            $arrFallbackIds = [];
             foreach ($arrIds as $intId) {
                 if (empty($arrReturn[$intId])) {
                     $arrFallbackIds[] = $intId;

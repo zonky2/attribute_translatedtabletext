@@ -45,8 +45,8 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
     {
         $metaModel = $this
             ->getMockBuilder('MetaModels\MetaModel')
-            ->setMethods(array())
-            ->setConstructorArgs(array(array()))
+            ->setMethods([])
+            ->setConstructorArgs([[]])
             ->getMock();
 
         $metaModel
@@ -74,7 +74,7 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
      */
     protected function getAttributeFactories()
     {
-        return array(new AttributeTypeFactory());
+        return [new AttributeTypeFactory()];
     }
 
     /**
@@ -85,19 +85,19 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
     public function testCreateSelect()
     {
         $factory   = new AttributeTypeFactory();
-        $values    = array(
+        $values    = [
             'translatedtabletext_cols' => serialize(
-                array(
+                [
                     'langcode'  => 'en',
-                    'rowLabels' => array(
-                        array(
+                    'rowLabels' => [
+                        [
                             'rowLabel' => 'rowlabel',
                             'rowStyle' => 'rowstyle'
-                        )
-                    )
-                )
+                        ]
+                    ]
+                ]
             )
-        );
+        ];
         $attribute = $factory->createInstance(
             $values,
             $this->mockMetaModel('mm_test', 'de', 'en')

@@ -44,15 +44,15 @@ class Subscriber extends BaseSubscriber
         $this
             ->addListener(
                 BuildWidgetEvent::NAME,
-                array($this, 'fillExtraData')
+                [$this, 'fillExtraData']
             )
             ->addListener(
                 DecodePropertyValueForWidgetEvent::NAME,
-                array($this, 'loadValues')
+                [$this, 'loadValues']
             )
             ->addListener(
                 EncodePropertyValueFromWidgetEvent::NAME,
-                array($this, 'saveValues')
+                [$this, 'saveValues']
             );
     }
 
@@ -92,7 +92,7 @@ class Subscriber extends BaseSubscriber
         }
 
         $attribute = $objMetaModel->getAttributeById($model->getProperty('id'));
-        $arrValues = $attribute ? $attribute->get('name') : array();
+        $arrValues = $attribute ? $attribute->get('name') : [];
 
         $languageEvent = new LoadLanguageFileEvent('languages');
         $this
@@ -100,7 +100,7 @@ class Subscriber extends BaseSubscriber
             ->getEventDispatcher()
             ->dispatch(ContaoEvents::SYSTEM_LOAD_LANGUAGE_FILE, $languageEvent);
 
-        $arrLanguages = array();
+        $arrLanguages = [];
         foreach ((array) $objMetaModel->getAvailableLanguages() as $strLangCode) {
             $arrLanguages[$strLangCode] = $translator->translate($strLangCode, 'LNG');
         }
@@ -113,7 +113,7 @@ class Subscriber extends BaseSubscriber
             }
         }
 
-        $arrRowClasses = array();
+        $arrRowClasses = [];
         foreach (array_keys(deserialize($arrValues)) as $strLangcode) {
             $arrRowClasses[] = ($strLangcode == $objMetaModel->getFallbackLanguage())
                 ? 'fallback_language'
@@ -200,7 +200,7 @@ class Subscriber extends BaseSubscriber
             return;
         }
 
-        $arrOutput = array();
+        $arrOutput = [];
         // Sort like in MetaModel definition.
         if ($arrLanguages) {
             foreach ($arrLanguages as $strLangCode) {
@@ -211,9 +211,9 @@ class Subscriber extends BaseSubscriber
                 }
 
                 if (is_array($varSubValue)) {
-                    $arrOutput[] = array('langcode' => $strLangCode, 'rowLabels' => $varSubValue);
+                    $arrOutput[] = ['langcode' => $strLangCode, 'rowLabels' => $varSubValue];
                 } else {
-                    $arrOutput[] = array('langcode' => $strLangCode, 'value' => $varSubValue);
+                    $arrOutput[] = ['langcode' => $strLangCode, 'value' => $varSubValue];
                 }
             }
         }
@@ -246,7 +246,7 @@ class Subscriber extends BaseSubscriber
         }
 
         $arrLangValues = deserialize($varValue);
-        $arrOutput     = array();
+        $arrOutput     = [];
 
         foreach ($arrLangValues as $varSubValue) {
             $strLangCode = $varSubValue['langcode'];

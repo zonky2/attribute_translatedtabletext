@@ -19,4 +19,4 @@
  * @filesource
  */
 
-$GLOBALS['TL_LANG']['tl_metamodel_rendersetting']['translatedtabletext_hide_tablehead'] = array('Hide tablehead', 'Select to hide the head of the table.');
+$GLOBALS['TL_LANG']['tl_metamodel_rendersetting']['translatedtabletext_hide_tablehead'] = ['Hide tablehead', 'Select to hide the head of the table.'];
