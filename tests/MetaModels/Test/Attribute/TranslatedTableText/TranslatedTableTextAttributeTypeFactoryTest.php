@@ -22,6 +22,8 @@ use MetaModels\Attribute\IAttributeTypeFactory;
 use MetaModels\Attribute\TranslatedTableText\AttributeTypeFactory;
 use MetaModels\IMetaModel;
 use MetaModels\Test\Attribute\AttributeTypeFactoryTest;
+use MetaModels\MetaModel;
+use MetaModels\Attribute\TranslatedTableText\TranslatedTableText;
 
 /**
  * Test the attribute factory.
@@ -44,7 +46,7 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
     protected function mockMetaModel($tableName, $language, $fallbackLanguage)
     {
         $metaModel = $this
-            ->getMockBuilder('MetaModels\MetaModel')
+            ->getMockBuilder(MetaModel::class)
             ->setMethods([])
             ->setConstructorArgs([[]])
             ->getMock();
@@ -106,7 +108,7 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
         $check                             = $values;
         $check['translatedtabletext_cols'] = unserialize($check['translatedtabletext_cols']);
 
-        $this->assertInstanceOf('MetaModels\Attribute\TranslatedTableText\TranslatedTableText', $attribute);
+        $this->assertInstanceOf(TranslatedTableText::class, $attribute);
 
         foreach ($check as $key => $value) {
             $this->assertEquals($value, $attribute->get($key), $key);

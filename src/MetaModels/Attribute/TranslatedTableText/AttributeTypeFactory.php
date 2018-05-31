@@ -31,6 +31,6 @@ class AttributeTypeFactory extends AbstractAttributeTypeFactory
         parent::__construct();
         $this->typeName  = 'translatedtabletext';
         $this->typeIcon  = 'system/modules/metamodelsattribute_translatedtabletext/html/translatedtabletext.png';
-        $this->typeClass = 'MetaModels\Attribute\TranslatedTableText\TranslatedTableText';
+        $this->typeClass = TranslatedTableText::class;
     }
 }

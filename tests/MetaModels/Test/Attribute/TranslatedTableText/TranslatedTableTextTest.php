@@ -43,7 +43,7 @@ class TranslatedTableTextTest extends TestCase
     public function testInstantiation()
     {
         $text = new TranslatedTableText($this->getMockForAbstractClass(IMetaModel::class));
-        $this->assertInstanceOf('MetaModels\Attribute\TranslatedTableText\TranslatedTableText', $text);
+        $this->assertInstanceOf(TranslatedTableText::class, $text);
     }
 
 
