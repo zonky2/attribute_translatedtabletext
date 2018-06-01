@@ -27,7 +27,7 @@ $GLOBALS['TL_DCA']['tl_metamodel_translatedtabletext'] = [
         'sql' => [
             'keys' => [
                 'id' => 'primary',
-                'att_id, item_id,row,col,langcode' => 'index'
+                'att_id,item_id,row,col,langcode' => 'index'
             ]
         ]
     ],
