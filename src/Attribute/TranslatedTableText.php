@@ -27,6 +27,7 @@
 
 namespace MetaModels\AttributeTranslatedTableTextBundle\Attribute;
 
+use Contao\StringUtil;
 use Contao\System;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
@@ -108,7 +109,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
     {
         $strActiveLanguage   = $this->getMetaModel()->getActiveLanguage();
         $strFallbackLanguage = $this->getMetaModel()->getFallbackLanguage();
-        $arrAllColLabels     = \deserialize($this->get('translatedtabletext_cols'), true);
+        $arrAllColLabels     = StringUtil::deserialize($this->get('translatedtabletext_cols'), true);
         $arrColLabels        = null;
 
         if (\array_key_exists($strActiveLanguage, $arrAllColLabels)) {
