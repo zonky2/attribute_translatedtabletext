@@ -30,8 +30,6 @@ use MetaModels\Attribute\TranslatedTableText\TranslatedTableText;
 
 /**
  * Test the attribute factory.
- *
- * @package MetaModels\Test\Filter\Setting
  */
 class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTest
 {

@@ -32,10 +32,6 @@ use MetaModels\DcGeneral\Events\BaseSubscriber;
 
 /**
  * This is the helper class for handling translated table text fields.
- *
- * @package    MetaModels
- * @subpackage AttributeTranslatedTableText
- * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  */
 class Subscriber extends BaseSubscriber
 {
