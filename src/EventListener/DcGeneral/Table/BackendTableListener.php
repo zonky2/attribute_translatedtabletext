@@ -3,22 +3,21 @@
 /**
  * This file is part of MetaModels/attribute_translatedtabletext.
  *
- * (c) 2012-2017 The MetaModels team.
+ * (c) 2012-2019 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
  * This project is provided in good faith and hope to be usable by anyone.
  *
- * @package    MetaModels
- * @subpackage AttributeTranslatedTableText
+ * @package    MetaModels/attribute_translatedtabletext
  * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Andreas Nölke <zero@brothers-project.de>
  * @author     David Greminger <david.greminger@1up.io>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @author     David Molineus <david.molineus@netzmacht.de>
- * @copyright  2012-2018 The MetaModels team.
+ * @copyright  2012-2019 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -37,10 +36,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * This is the helper class for handling translated table text fields.
- *
- * @package    MetaModels
- * @subpackage AttributeTranslatedTableText
- * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  */
 class BackendTableListener
 {
