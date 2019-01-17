@@ -12,7 +12,7 @@
  * Translations are managed automatically using Transifex. To create a new translation
  * or to help to maintain an existing one, please register at transifex.com.
  *
- * Last-updated: 2019-01-17T22:01:17+01:00
+ * Last-updated: 2019-01-17T22:01:22+01:00
  *
  * @copyright 2012-2019 The MetaModels team.
  * @license   https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0-or-later
@@ -21,10 +21,6 @@
  */
 
 
-$GLOBALS['TL_LANG']['tl_metamodel_attribute']['tabletext_cols']['0']                = 'Veergude seadistamine';
-$GLOBALS['TL_LANG']['tl_metamodel_attribute']['tabletext_quantity_cols']['0']       = 'Veergude arv';
-$GLOBALS['TL_LANG']['tl_metamodel_attribute']['tabletext_rowLabel']['0']            = 'SiltSilt';
-$GLOBALS['TL_LANG']['tl_metamodel_attribute']['tabletext_rowLabel']['1']            = 'Palun sisesta veergude päised';
-$GLOBALS['TL_LANG']['tl_metamodel_attribute']['tabletext_rowStyle']['0']            = 'Laius';
-$GLOBALS['TL_LANG']['tl_metamodel_attribute']['typeOptions']['translatedtabletext'] = 'Tõlgitud tabeli tekst';
+$GLOBALS['TL_LANG']['tl_metamodel_rendersetting']['translatedtabletext_hide_tablehead']['0'] = 'Peida tabeli päis';
+$GLOBALS['TL_LANG']['tl_metamodel_rendersetting']['translatedtabletext_hide_tablehead']['1'] = 'Vali, et peita tabeli päis.';
 
