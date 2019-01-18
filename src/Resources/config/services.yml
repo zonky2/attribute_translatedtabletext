@@ -2,10 +2,13 @@ services:
   metamodels.attribute_translatedtabletext.factory:
     class: MetaModels\AttributeTranslatedTableTextBundle\Attribute\AttributeTypeFactory
     arguments:
-      - "@database_connection"
-      - "@event_dispatcher"
+      - '@MetaModels\AttributeTranslatedTableTextBundle\DatabaseAccessor'
     tags:
       - { name: metamodels.attribute_factory }
+
+  MetaModels\AttributeTranslatedTableTextBundle\DatabaseAccessor:
+    arguments:
+      - "@database_connection"
 
   metamodels.attribute_translatedtabletext.listeners.translated_alias_options:
     class: MetaModels\AttributeTranslatedTableTextBundle\EventListener\DcGeneral\Table\BackendTableListener

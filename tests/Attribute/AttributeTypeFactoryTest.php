@@ -21,8 +21,8 @@
 
 namespace MetaModels\AttributeTranslatedTableTextBundle\Test\Attribute;
 
-use Doctrine\DBAL\Connection;
 use MetaModels\AttributeTranslatedTableTextBundle\Attribute\AttributeTypeFactory;
+use MetaModels\AttributeTranslatedTableTextBundle\DatabaseAccessor;
 use MetaModels\IMetaModel;
 use PHPUnit\Framework\TestCase;
 use MetaModels\AttributeTranslatedTableTextBundle\Attribute\TranslatedTableText;
@@ -48,19 +48,16 @@ class AttributeTypeFactoryTest extends TestCase
         $metaModel = $this->getMockForAbstractClass(IMetaModel::class);
 
         $metaModel
-            ->expects($this->any())
             ->method('getTableName')
-            ->will($this->returnValue($tableName));
+            ->willReturn($tableName);
 
         $metaModel
-            ->expects($this->any())
             ->method('getActiveLanguage')
-            ->will($this->returnValue($language));
+            ->willReturn($language);
 
         $metaModel
-            ->expects($this->any())
             ->method('getFallbackLanguage')
-            ->will($this->returnValue($fallbackLanguage));
+            ->willReturn($fallbackLanguage);
 
         return $metaModel;
     }
@@ -68,11 +65,11 @@ class AttributeTypeFactoryTest extends TestCase
     /**
      * Mock the database connection.
      *
-     * @return \PHPUnit_Framework_MockObject_MockObject|Connection
+     * @return \PHPUnit_Framework_MockObject_MockObject|DatabaseAccessor
      */
-    private function mockConnection()
+    private function mockAccessor()
     {
-        return $this->getMockBuilder(Connection::class)
+        return $this->getMockBuilder(DatabaseAccessor::class)
             ->disableOriginalConstructor()
             ->getMock();
     }
@@ -84,7 +81,7 @@ class AttributeTypeFactoryTest extends TestCase
      */
     public function testCreateAttribute()
     {
-        $factory   = new AttributeTypeFactory($this->mockConnection());
+        $factory   = new AttributeTypeFactory($this->mockAccessor());
         $values    = [
             'translatedtabletext_cols' => \serialize(
                 [

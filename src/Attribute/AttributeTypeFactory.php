@@ -20,8 +20,8 @@
 
 namespace MetaModels\AttributeTranslatedTableTextBundle\Attribute;
 
-use Doctrine\DBAL\Connection;
 use MetaModels\Attribute\AbstractAttributeTypeFactory;
+use MetaModels\AttributeTranslatedTableTextBundle\DatabaseAccessor;
 
 /**
  * Attribute type factory for translated table text attributes.
@@ -31,23 +31,23 @@ class AttributeTypeFactory extends AbstractAttributeTypeFactory
     /**
      * Database connection.
      *
-     * @var Connection
+     * @var DatabaseAccessor
      */
-    private $connection;
+    private $accessor;
 
     /**
      * Create an instance.
      *
-     * @param Connection $connection Database connection.
+     * @param DatabaseAccessor $accessor Database accessor.
      */
-    public function __construct(Connection $connection)
+    public function __construct(DatabaseAccessor $accessor)
     {
         parent::__construct();
 
-        $this->typeName   = 'translatedtabletext';
-        $this->typeIcon   = 'bundles/metamodelsattributetranslatedtabletext/translatedtabletext.png';
-        $this->typeClass  = TranslatedTableText::class;
-        $this->connection = $connection;
+        $this->typeName  = 'translatedtabletext';
+        $this->typeIcon  = 'bundles/metamodelsattributetranslatedtabletext/translatedtabletext.png';
+        $this->typeClass = TranslatedTableText::class;
+        $this->accessor  = $accessor;
     }
 
     /**
@@ -55,6 +55,6 @@ class AttributeTypeFactory extends AbstractAttributeTypeFactory
      */
     public function createInstance($information, $metaModel)
     {
-        return new $this->typeClass($metaModel, $information, $this->connection);
+        return new $this->typeClass($metaModel, $information, $this->accessor);
     }
 }
