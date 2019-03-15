@@ -1,0 +1,28 @@
+services:
+  metamodels.attribute_translatedtabletext.factory:
+    class: MetaModels\AttributeTranslatedTableTextBundle\Attribute\AttributeTypeFactory
+    arguments:
+      - '@MetaModels\AttributeTranslatedTableTextBundle\DatabaseAccessor'
+    tags:
+      - { name: metamodels.attribute_factory }
+
+  MetaModels\AttributeTranslatedTableTextBundle\DatabaseAccessor:
+    arguments:
+      - "@database_connection"
+
+  metamodels.attribute_translatedtabletext.listeners.translated_alias_options:
+    class: MetaModels\AttributeTranslatedTableTextBundle\EventListener\DcGeneral\Table\BackendTableListener
+    arguments:
+      - '@cca.dc-general.scope-matcher'
+      - '@metamodels.factory'
+      - '@event_dispatcher'
+    tags:
+      - name: kernel.event_listener
+        event: dc-general.view.contao2backend.build-widget
+        method: fillExtraData
+      - name: kernel.event_listener
+        event: dc-general.view.contao2backend.decode-property-value-for-widget
+        method: loadValues
+      - name: kernel.event_listener
+        event: dc-general.view.contao2backend.encode-property-value-from-widget
+        method: saveValues

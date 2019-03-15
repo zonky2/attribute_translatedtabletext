@@ -19,19 +19,18 @@
  * @filesource
  */
 
-namespace MetaModels\Test\Attribute\TranslatedTableText;
+namespace MetaModels\AttributeTranslatedTableTextBundle\Test\Attribute;
 
-use MetaModels\Attribute\IAttributeTypeFactory;
-use MetaModels\Attribute\TranslatedTableText\AttributeTypeFactory;
+use MetaModels\AttributeTranslatedTableTextBundle\Attribute\AttributeTypeFactory;
+use MetaModels\AttributeTranslatedTableTextBundle\DatabaseAccessor;
 use MetaModels\IMetaModel;
-use MetaModels\Test\Attribute\AttributeTypeFactoryTest;
-use MetaModels\MetaModel;
-use MetaModels\Attribute\TranslatedTableText\TranslatedTableText;
+use PHPUnit\Framework\TestCase;
+use MetaModels\AttributeTranslatedTableTextBundle\Attribute\TranslatedTableText;
 
 /**
  * Test the attribute factory.
  */
-class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTest
+class AttributeTypeFactoryTest extends TestCase
 {
     /**
      * Mock a MetaModel.
@@ -46,38 +45,33 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
      */
     protected function mockMetaModel($tableName, $language, $fallbackLanguage)
     {
-        $metaModel = $this
-            ->getMockBuilder(MetaModel::class)
-            ->setMethods([])
-            ->setConstructorArgs([[]])
-            ->getMock();
+        $metaModel = $this->getMockForAbstractClass(IMetaModel::class);
 
         $metaModel
-            ->expects($this->any())
             ->method('getTableName')
-            ->will($this->returnValue($tableName));
+            ->willReturn($tableName);
 
         $metaModel
-            ->expects($this->any())
             ->method('getActiveLanguage')
-            ->will($this->returnValue($language));
+            ->willReturn($language);
 
         $metaModel
-            ->expects($this->any())
             ->method('getFallbackLanguage')
-            ->will($this->returnValue($fallbackLanguage));
+            ->willReturn($fallbackLanguage);
 
         return $metaModel;
     }
 
     /**
-     * Override the method to run the tests on the attribute factories to be tested.
+     * Mock the database connection.
      *
-     * @return IAttributeTypeFactory[]
+     * @return \PHPUnit_Framework_MockObject_MockObject|DatabaseAccessor
      */
-    protected function getAttributeFactories()
+    private function mockAccessor()
     {
-        return [new AttributeTypeFactory()];
+        return $this->getMockBuilder(DatabaseAccessor::class)
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 
     /**
@@ -85,9 +79,9 @@ class TranslatedTableTextAttributeTypeFactoryTest extends AttributeTypeFactoryTe
      *
      * @return void
      */
-    public function testCreateSelect()
+    public function testCreateAttribute()
     {
-        $factory   = new AttributeTypeFactory();
+        $factory   = new AttributeTypeFactory($this->mockAccessor());
         $values    = [
             'translatedtabletext_cols' => \serialize(
                 [

@@ -14,17 +14,15 @@
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Andreas Isaak <andy.jared@googlemail.com>
  * @author     David Greminger <david.greminger@1up.io>
+ * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @copyright  2012-2019 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
-/**
- * Register the templates
- */
-\Contao\TemplateLoader::addFiles(
-    [
-        'mm_attr_translatedtabletext' => 'system/modules/metamodelsattribute_translatedtabletext/templates',
-    ]
-);
+$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['metasubselectpalettes']['attr_id']['translatedtabletext'] = [
+    'presentation' => [
+        'tl_class',
+    ],
+];

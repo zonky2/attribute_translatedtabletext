@@ -17,16 +17,21 @@
  * @author     Andreas Isaak <andy.jared@googlemail.com>
  * @author     David Greminger <david.greminger@1up.io>
  * @author     Ingolf Steinhardt <info@e-spin.de>
+ * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @copyright  2012-2019 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
-namespace MetaModels\Attribute\TranslatedTableText;
+namespace MetaModels\AttributeTranslatedTableTextBundle\Attribute;
 
+use Contao\StringUtil;
+use Contao\System;
 use MetaModels\Attribute\Base;
 use MetaModels\Attribute\IComplex;
+use MetaModels\AttributeTranslatedTableTextBundle\DatabaseAccessor;
+use MetaModels\IMetaModel;
 use MetaModels\Attribute\ITranslated;
 
 /**
@@ -34,6 +39,41 @@ use MetaModels\Attribute\ITranslated;
  */
 class TranslatedTableText extends Base implements ITranslated, IComplex
 {
+    /**
+     * The database accessor.
+     *
+     * @var DatabaseAccessor
+     */
+    private $accessor;
+
+    /**
+     * Instantiate an MetaModel attribute.
+     *
+     * Note that you should not use this directly but use the factory classes to instantiate attributes.
+     *
+     * @param IMetaModel       $objMetaModel The MetaModel instance this attribute belongs to.
+     * @param array            $arrData      The information array, for attribute information, refer to documentation of
+     *                                       table tl_metamodel_attribute and documentation of the certain attribute
+     *                                       classes for information what values are understood.
+     * @param DatabaseAccessor $accessor     Database connection.
+     */
+    public function __construct(IMetaModel $objMetaModel, array $arrData = [], DatabaseAccessor $accessor = null)
+    {
+        parent::__construct($objMetaModel, $arrData);
+
+        if (null === $accessor) {
+            // @codingStandardsIgnoreStart
+            @\trigger_error(
+                'DatabaseAccessor is missing. It has to be passed in the constructor. Fallback will be dropped.',
+                E_USER_DEPRECATED
+            );
+            // @codingStandardsIgnoreEnd
+            $accessor = new DatabaseAccessor(System::getContainer()->get('database_connection'));
+        }
+
+        $this->accessor = $accessor;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -49,23 +89,13 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
     }
 
     /**
-     * Retrieve the table name containing the values.
-     *
-     * @return string
-     */
-    protected function getValueTable()
-    {
-        return 'tl_metamodel_translatedtabletext';
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function getFieldDefinition($arrOverrides = [])
     {
         $strActiveLanguage   = $this->getMetaModel()->getActiveLanguage();
         $strFallbackLanguage = $this->getMetaModel()->getFallbackLanguage();
-        $arrAllColLabels     = \deserialize($this->get('translatedtabletext_cols'), true);
+        $arrAllColLabels     = StringUtil::deserialize($this->get('translatedtabletext_cols'), true);
         $arrColLabels        = null;
 
         if (\array_key_exists($strActiveLanguage, $arrAllColLabels)) {
@@ -109,7 +139,9 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      *
      * @param int    $intCol      The col number, optional.
      *
-     * @return string
+     * @return array
+     *
+     * @deprecated Not used since 2.1 to be removed in 3.0
      */
     protected function getWhere($mixIds, $strLangCode = null, $intRow = null, $intCol = null)
     {
@@ -192,55 +224,16 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
     }
 
     /**
-     * Retrieve the setter array.
-     *
-     * @param array  $arrCell     The cells of the table.
-     *
-     * @param int    $intId       The id of the item.
-     *
-     * @param string $strLangCode The language code.
-     *
-     * @return array
-     */
-    protected function getSetValues($arrCell, $intId, $strLangCode)
-    {
-        return array(
-            'tstamp'   => \time(),
-            'value'    => (string) $arrCell['value'],
-            'att_id'   => $this->get('id'),
-            'row'      => (int) $arrCell['row'],
-            'col'      => (int) $arrCell['col'],
-            'item_id'  => $intId,
-            'langcode' => $strLangCode,
-        );
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function getTranslatedDataFor($arrIds, $strLangCode)
     {
-        $arrWhere = $this->getWhere($arrIds, $strLangCode);
-        $strQuery = \sprintf(
-            'SELECT * FROM %s%s ORDER BY item_id ASC, row ASC, col ASC',
-            $this->getValueTable(),
-            ($arrWhere ? ' WHERE ' . $arrWhere['procedure'] : '')
+        return $this->accessor->fetchDataFor(
+            $this->get('id'),
+            $arrIds,
+            $strLangCode,
+            $this->get('tabletext_quantity_cols')
         );
-        $objValue = $this
-            ->getMetaModel()
-            ->getServiceContainer()
-            ->getDatabase()
-            ->prepare($strQuery)
-            ->execute(($arrWhere ? $arrWhere['params'] : null));
-
-        $countCol = $this->get('tabletext_quantity_cols');
-        $result   = [];
-        while ($objValue->next()) {
-            $content = $objValue->row();
-            $this->pushValue($content, $result, $countCol, $strLangCode);
-        }
-
-        return $result;
     }
 
     /**
@@ -258,28 +251,29 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     public function setTranslatedDataFor($arrValues, $strLangCode)
     {
-        $objDB = $this->getMetaModel()->getServiceContainer()->getDatabase();
-
         // Get the ids.
         $arrIds = \array_keys($arrValues);
 
         // Reset all data for the ids in language.
         $this->unsetValueFor($arrIds, $strLangCode);
 
-        $strQueryInsert = 'INSERT INTO ' . $this->getValueTable() . ' %s';
         foreach ($arrIds as $intId) {
             // Walk every row.
             foreach ($arrValues[$intId] as $row) {
-                // Walk every column and update / insert the value.
-                foreach ($row as $col) {
-                    $values = $this->getSetValues($col, $intId, $strLangCode);
-                    if ($values['value'] === '') {
+                // Walk every column and insert the value.
+                foreach ($row as $cell) {
+                    if (empty($cell['value'])) {
                         continue;
                     }
-                    $objDB
-                        ->prepare($strQueryInsert)
-                        ->set($values)
-                        ->execute();
+
+                    $this->accessor->setDataRow(
+                        $this->get('id'),
+                        $intId,
+                        $strLangCode,
+                        $cell['row'],
+                        $cell['col'],
+                        $cell['value']
+                    );
                 }
             }
         }
@@ -290,13 +284,7 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      */
     public function unsetValueFor($arrIds, $strLangCode)
     {
-        $objDB    = $this->getMetaModel()->getServiceContainer()->getDatabase();
-        $arrWhere = $this->getWhere($arrIds, $strLangCode);
-        $strQuery = 'DELETE FROM ' . $this->getValueTable() . ($arrWhere ? ' WHERE ' . $arrWhere['procedure'] : '');
-
-        $objDB
-            ->prepare($strQuery)
-            ->execute(($arrWhere ? $arrWhere['params'] : null));
+        $this->accessor->removeDataForIds($this->get('id'), $arrIds, $strLangCode);
     }
 
     /**
@@ -321,8 +309,6 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
 
     /**
      * {@inheritDoc}
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function getDataFor($arrIds)
     {
@@ -355,8 +341,6 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
      * {@inheritDoc}
      *
      * @throws \RuntimeException When the passed value is not an array of ids.
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function unsetDataFor($arrIds)
     {
@@ -371,55 +355,6 @@ class TranslatedTableText extends Base implements ITranslated, IComplex
             return;
         }
 
-        $objDB    = $this->getMetaModel()->getServiceContainer()->getDatabase();
-        $arrWhere = $this->getWhere($arrIds);
-        $strQuery = 'DELETE FROM ' . $this->getValueTable() . ($arrWhere ? ' WHERE ' . $arrWhere['procedure'] : '');
-
-        $objDB
-            ->prepare($strQuery)
-            ->execute(($arrWhere ? $arrWhere['params'] : null));
-    }
-
-    /**
-     * Push a database value to the passed array.
-     *
-     * @param array  $value        The value from the database.
-     * @param array  $result       The result list.
-     * @param int    $countCol     The count of columns per row.
-     * @param string $languageCode The language code to use for empty cells.
-     *
-     * @return void
-     */
-    private function pushValue($value, &$result, $countCol, $languageCode)
-    {
-        $buildRow = function (&$list, $itemId, $row) use ($countCol, $languageCode) {
-            for ($i = \count($list); $i < $countCol; $i++) {
-                $list[$i] = [
-                    'tstamp'   => 0,
-                    'value'    => '',
-                    'att_id'   => $this->get('id'),
-                    'row'      => $row,
-                    'col'      => $i,
-                    'item_id'  => $itemId,
-                    'langcode' => $languageCode
-                ];
-            }
-        };
-
-        $itemId = $value['item_id'];
-        if (!isset($result[$itemId])) {
-            $result[$itemId] = [];
-        }
-
-        // Prepare all rows up until to this item.
-        $row = \count($result[$itemId]);
-        while ($row <= $value['row']) {
-            if (!isset($result[$itemId][$row])) {
-                $result[$itemId][$row] = [];
-            }
-            $buildRow($result[$itemId][$row], $itemId, $row);
-            $row++;
-        }
-        $result[$itemId][(int) $value['row']][(int) $value['col']] = $value;
+        $this->accessor->removeDataForIds($this->get('id'), $arrIds);
     }
 }

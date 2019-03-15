@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of MetaModels/attribute_translatedtabletext.
  *
@@ -11,29 +12,19 @@
  *
  * @package    MetaModels/attribute_translatedtabletext
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @author     David Molineus <david.molineus@netzmacht.de>
  * @copyright  2012-2019 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_translatedtabletext/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
-namespace MetaModels\Attribute\TranslatedTableText;
+namespace MetaModels\AttributeTranslatedTableTextBundle;
 
-use MetaModels\Attribute\AbstractAttributeTypeFactory;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
- * Attribute type factory for translated table text attributes.
+ * This is the bundle class.
  */
-class AttributeTypeFactory extends AbstractAttributeTypeFactory
+class MetaModelsAttributeTranslatedTableTextBundle extends Bundle
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->typeName  = 'translatedtabletext';
-        $this->typeIcon  = 'system/modules/metamodelsattribute_translatedtabletext/html/translatedtabletext.png';
-        $this->typeClass = TranslatedTableText::class;
-    }
 }
